@@ -6,8 +6,8 @@
 	<version>0.0.1-SNAPSHOT</version>
 
 	<properties>
-		<neo4j.version>1.9.1</neo4j.version>
-		<activiti.version>5.13</activiti.version>
+		<neo4j.version>2.1.2</neo4j.version>
+		<activiti.version>5.15.1</activiti.version>
 	</properties>
 
 	<dependencies>
@@ -36,6 +36,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.activiti</groupId>
+			<artifactId>activiti-engine</artifactId>
+			<version>${activiti.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.activiti</groupId>
 			<artifactId>activiti-bpmn-model</artifactId>
 			<version>${activiti.version}</version>
 		</dependency>
@@ -58,5 +63,19 @@
 			<url>https://maven.alfresco.com/nexus/content/groups/public/</url>
 		</repository>
 	</repositories>
+
+    <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.1</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

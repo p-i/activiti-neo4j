@@ -1,8 +1,8 @@
 package org.activiti.neo4j;
 
-import java.util.List;
-
 import org.activiti.neo4j.manager.TaskManager;
+
+import java.util.List;
 
 public class TaskService {
 
@@ -20,7 +20,7 @@ public class TaskService {
       public void execute(CommandContext<List<Task>> commandContext) {
         commandContext.setResult(taskManager.getTasksByAssignee(assignee));
       }
-      
+
     });
   }
 
