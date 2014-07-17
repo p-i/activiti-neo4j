@@ -9,8 +9,10 @@ import org.activiti.engine.task.IdentityLink;
 import org.activiti.neo4j.*;
 import org.activiti.neo4j.ProcessDefinition;
 import org.activiti.neo4j.cmd.ICommand;
+import org.activiti.neo4j.cmd.DeployNeoCmd;
 import org.activiti.neo4j.helper.BpmnModelUtil;
 import org.activiti.neo4j.helper.BpmnParser;
+import org.activiti.neo4j.helper.DeploymentBuilderNeo4jImpl;
 import org.activiti.validation.ValidationError;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -33,61 +35,67 @@ public class RepositoryServiceNeo4jImpl implements RepositoryService {
     this.commandExecutor = commandExecutor;
   }
 
+    public Deployment deploy(DeploymentBuilder deploymentBuilder) {
+        ICommand<Deployment> deploy = new DeployNeoCmd<Deployment>(deploymentBuilder);
+        return commandExecutor.execute(deploy);
+    }
+
   public ProcessDefinition deploy(final InputStream inputStream) {
 
     return commandExecutor.execute(new ICommand<ProcessDefinition>() {
 
-      public void execute(CommandContextNeo4j<ProcessDefinition> commandContext) {
-        Process process = null;
-        BpmnModel bpmnModel = BpmnParser.parse(inputStream);
+      public ProcessDefinition execute(CommandContextNeo4j<ProcessDefinition> commandContext) {
+          Process process = null;
+          BpmnModel bpmnModel = BpmnParser.parse(inputStream);
 
-        // TODO: move the below stuff to a parser / behaviour / BPMNParseHandler thingy
+          // TODO: move the below stuff to a parser / behaviour / BPMNParseHandler thingy
 
-        // Create Node representation
-        ProcessDefinition processDefinition = null;
+          // Create Node representation
+          ProcessDefinition processDefinition = null;
 
-        nodeMap = new HashMap<String, Node>();
-        sequenceFlows = new HashSet<SequenceFlow>();
-        for (FlowElement flowElement : process.getFlowElements()) {
-          if (flowElement instanceof StartEvent) {
-            addStartEvent((StartEvent) flowElement);
-          } else if (flowElement instanceof UserTask) {
-            addUserTask((UserTask) flowElement);
-          } else if (flowElement instanceof EndEvent) {
-            addEndEvent((EndEvent) flowElement);
-          } else if (flowElement instanceof ParallelGateway) {
-            addParallelGateway((ParallelGateway) flowElement);
-          } else if (flowElement instanceof ExclusiveGateway) {
-            addExclusiveGateway((ExclusiveGateway) flowElement);
-          } else if (flowElement instanceof ServiceTask) {
-            addServiceTask((ServiceTask) flowElement);
-          } else if (flowElement instanceof SequenceFlow) {
-            sequenceFlows.add((SequenceFlow) flowElement);
+          nodeMap = new HashMap<String, Node>();
+          sequenceFlows = new HashSet<SequenceFlow>();
+          for (FlowElement flowElement : process.getFlowElements()) {
+              if (flowElement instanceof StartEvent) {
+                  addStartEvent((StartEvent) flowElement);
+              } else if (flowElement instanceof UserTask) {
+                  addUserTask((UserTask) flowElement);
+              } else if (flowElement instanceof EndEvent) {
+                  addEndEvent((EndEvent) flowElement);
+              } else if (flowElement instanceof ParallelGateway) {
+                  addParallelGateway((ParallelGateway) flowElement);
+              } else if (flowElement instanceof ExclusiveGateway) {
+                  addExclusiveGateway((ExclusiveGateway) flowElement);
+              } else if (flowElement instanceof ServiceTask) {
+                  addServiceTask((ServiceTask) flowElement);
+              } else if (flowElement instanceof SequenceFlow) {
+                  sequenceFlows.add((SequenceFlow) flowElement);
+              }
           }
-        }
-        processSequenceFlows();
+          processSequenceFlows();
 
-        // Create process definition node
-        Node processDefinitionNode = graphDb.createNode();
-        processDefinition = new ProcessDefinition();
-        processDefinition.setId(processDefinitionNode.getId());
-        processDefinition.setKey(process.getId());
+          // Create process definition node
+          Node processDefinitionNode = graphDb.createNode();
+          processDefinition = new ProcessDefinition();
+          processDefinition.setId(processDefinitionNode.getId());
+          processDefinition.setKey(process.getId());
 
-        // Temporary (for visualization)
-        //graphDb.getReferenceNode().createRelationshipTo(processDefinitionNode, RelTypes.PROCESS_DEFINITION);
+          // Temporary (for visualization)
+          //graphDb.getReferenceNode().createRelationshipTo(processDefinitionNode, RelTypes.PROCESS_DEFINITION);
 
-        // Create relationship from process definition node to start event
-        StartEvent startEvent = BpmnModelUtil.findFlowElementsOfType(process, StartEvent.class).get(0);
-        Node startEventNode = nodeMap.get(startEvent.getId());
-        processDefinitionNode.createRelationshipTo(startEventNode, RelTypes.IS_STARTED_FROM);
+          // Create relationship from process definition node to start event
+          StartEvent startEvent = BpmnModelUtil.findFlowElementsOfType(process, StartEvent.class).get(0);
+          Node startEventNode = nodeMap.get(startEvent.getId());
+          processDefinitionNode.createRelationshipTo(startEventNode, RelTypes.IS_STARTED_FROM);
 
-        // Add process definition to index
-        Index<Node> processDefinitionIndex = graphDb.index().forNodes(Constants.PROCESS_DEFINITION_INDEX);
-        processDefinitionIndex.putIfAbsent(processDefinitionNode, Constants.INDEX_KEY_PROCESS_DEFINITION_KEY, processDefinition.getKey());
+          // Add process definition to index
+          Index<Node> processDefinitionIndex = graphDb.index().forNodes(Constants.PROCESS_DEFINITION_INDEX);
+          processDefinitionIndex.putIfAbsent(processDefinitionNode, Constants.INDEX_KEY_PROCESS_DEFINITION_KEY, processDefinition.getKey());
 
-        commandContext.setResult(processDefinition);
+          commandContext.setResult(processDefinition);
+
+          return processDefinition;
       }
-
     });
   }
   protected void addStartEvent(StartEvent startEvent) {
@@ -156,14 +164,9 @@ public class RepositoryServiceNeo4jImpl implements RepositoryService {
   }
 
 
-
-
-
-
     @Override
     public DeploymentBuilder createDeployment() {
-        _notImplemented();
-        return null;
+        return new DeploymentBuilderNeo4jImpl(this);
     }
 
     @Override

@@ -29,5 +29,5 @@ public interface ICommand<T> {
      *
      * @param commandContextNeo4j
      */
-    void execute(CommandContextNeo4j<T> commandContextNeo4j);
+    T execute(CommandContextNeo4j<T> commandContextNeo4j);
 }
