@@ -1,5 +1,7 @@
-package org.activiti.neo4j;
+package org.activiti.neo4j.services;
 
+import org.activiti.neo4j.*;
+import org.activiti.neo4j.cmd.ICommand;
 import org.activiti.neo4j.entity.NodeBasedExecution;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -10,17 +12,17 @@ import org.neo4j.graphdb.index.Index;
 public class RuntimeService {
 
   protected GraphDatabaseService graphDb;
-  protected CommandExecutor commandExecutor;
+  protected CommandExecutorNeo4j commandExecutor;
 
-  public RuntimeService(GraphDatabaseService graphDb, CommandExecutor commandExecutor) {
+  public RuntimeService(GraphDatabaseService graphDb, CommandExecutorNeo4j commandExecutor) {
     this.graphDb = graphDb;
     this.commandExecutor = commandExecutor;
   }
 
   public void startProcessInstanceByKey(final String key) {
-    commandExecutor.execute(new Command<Void>() {
+    commandExecutor.execute(new ICommand<Void>() {
       
-      public void execute(CommandContext<Void> commandContext) {
+      public void execute(CommandContextNeo4j<Void> commandContext) {
         // Find process definition node
         
         // TODO: encapsulate in a manager!

@@ -20,7 +20,7 @@ import org.activiti.neo4j.manager.ExecutionManager;
 /**
  * @author Joram Barrez
  */
-public class CommandContext<T> implements EngineOperations {
+public class CommandContextNeo4j<T> implements EngineOperations {
   
   protected Core core;
   protected ExecutionManager executionManager;
@@ -36,7 +36,7 @@ public class CommandContext<T> implements EngineOperations {
     core.signal(this, execution);
   }
   
-  /* package */ CommandContext() {
+  /* package */ CommandContextNeo4j() {
     this.agenda = new LinkedList<Runnable>();
   }
 

@@ -18,7 +18,7 @@ public class ProcessEngineNeo4jImpl implements ProcessEngine {
     protected RepositoryService repositoryService;
     protected RuntimeService runtimeService;
     protected TaskService taskService;
-    protected CommandExecutor commandExecutor;
+    protected CommandExecutorNeo4j commandExecutor;
 
     public ProcessEngineNeo4jImpl() {
 
@@ -31,7 +31,7 @@ public class ProcessEngineNeo4jImpl implements ProcessEngine {
     public void setGraphDatabaseService(GraphDatabaseService graphDatabaseService) {
         this.graphDatabaseService = graphDatabaseService;
     }
-    public void setCommandExecutor(CommandExecutor commandExecutor) {
+    public void setCommandExecutor(CommandExecutorNeo4j commandExecutor) {
         this.commandExecutor = commandExecutor;
     }
 
@@ -78,5 +78,9 @@ public class ProcessEngineNeo4jImpl implements ProcessEngine {
     @Override
     public ManagementService getManagementService() {
         return null;
+    }
+
+    public void setRepositoryService(RepositoryService repositoryService) {
+        this.repositoryService = repositoryService;
     }
 }

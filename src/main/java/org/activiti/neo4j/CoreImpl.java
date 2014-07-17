@@ -27,7 +27,7 @@ public class CoreImpl implements Core {
   
   protected BehaviorMapping behaviorMapping;
   
-  public void continueProcess(final CommandContext<?> commandContext, final Execution execution) {
+  public void continueProcess(final CommandContextNeo4j<?> commandContext, final Execution execution) {
     commandContext.getAgenda().add(new Runnable() {
       
       public void run() {
@@ -39,7 +39,7 @@ public class CoreImpl implements Core {
     });
   }
   
-  public void signal(final CommandContext<?> commandContext, final Execution execution) {
+  public void signal(final CommandContextNeo4j<?> commandContext, final Execution execution) {
     commandContext.getAgenda().add(new Runnable() {
       
       public void run() {

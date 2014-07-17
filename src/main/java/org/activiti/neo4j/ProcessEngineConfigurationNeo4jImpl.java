@@ -13,13 +13,13 @@
 package org.activiti.neo4j;
 
 import org.activiti.engine.*;
-import org.activiti.engine.impl.*;
 import org.activiti.neo4j.behavior.BehaviorMapping;
 import org.activiti.neo4j.behavior.BehaviorMappingImpl;
 import org.activiti.neo4j.manager.ExecutionManager;
 import org.activiti.neo4j.manager.NodeBaseExecutionManager;
 import org.activiti.neo4j.manager.NodeBasedTaskManager;
 import org.activiti.neo4j.manager.TaskManager;
+import org.activiti.neo4j.services.RepositoryServiceNeo4jImpl;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
@@ -38,17 +38,17 @@ public class ProcessEngineConfigurationNeo4jImpl extends ProcessEngineConfigurat
     protected GraphDatabaseService graphDatabaseService;
     protected BehaviorMapping behaviorMapping;
     protected Core core;
-    protected CommandExecutor commandExecutor;
+    protected CommandExecutorNeo4j commandExecutor;
     protected ExecutionManager executionManager;
     protected TaskManager taskManager;
 
-    protected RepositoryService repositoryService = new RepositoryServiceImpl();
-    protected RuntimeService runtimeService = new RuntimeServiceImpl();
-    protected HistoryService historyService = new HistoryServiceImpl();
-    protected IdentityService identityService = new IdentityServiceImpl();
-    protected TaskService taskService = new TaskServiceImpl();
-    protected FormService formService = new FormServiceImpl();
-    protected ManagementService managementService = new ManagementServiceImpl();
+    protected RepositoryService repositoryService;
+    protected RuntimeService runtimeService;
+    protected HistoryService historyService;
+    protected IdentityService identityService;
+    protected TaskService taskService;
+    protected FormService formService;
+    protected ManagementService managementService;
 
 
     public ProcessEngineNeo4jImpl buildProcessEngine() {
@@ -85,7 +85,7 @@ public class ProcessEngineConfigurationNeo4jImpl extends ProcessEngineConfigurat
     }
 
     protected void initCommandExecutor(ProcessEngineNeo4jImpl processEngine) {
-        CommandExecutor commandExecutor = new CommandExecutor(graphDatabaseService);
+        CommandExecutorNeo4j commandExecutor = new CommandExecutorNeo4j(graphDatabaseService);
         commandExecutor.setCore(core);
         commandExecutor.setExecutionManager(executionManager);
 
@@ -94,10 +94,10 @@ public class ProcessEngineConfigurationNeo4jImpl extends ProcessEngineConfigurat
     }
 
     protected void initServices(ProcessEngineNeo4jImpl processEngine) {
-/*    RepositoryService repositoryService = new RepositoryService(graphDatabaseService, commandExecutor);
-    processEngine.setRepositoryService(repositoryService);
+        RepositoryService repositoryService = new RepositoryServiceNeo4jImpl(graphDatabaseService, commandExecutor);
+        processEngine.setRepositoryService(repositoryService);
 
-    RuntimeService runtimeService = new RuntimeService(graphDatabaseService, commandExecutor);
+/*    RuntimeService runtimeService = new RuntimeService(graphDatabaseService, commandExecutor);
     processEngine.setRuntimeService(runtimeService);
 
     TaskService taskService = new TaskService(commandExecutor);

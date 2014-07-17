@@ -12,6 +12,7 @@
  */
 package org.activiti.neo4j;
 
+import org.activiti.neo4j.cmd.ICommand;
 import org.activiti.neo4j.manager.ExecutionManager;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
@@ -21,22 +22,22 @@ import org.neo4j.graphdb.Transaction;
  * @author Joram Barrez
  * 
  */
-public class CommandExecutor {
+public class CommandExecutorNeo4j {
   
   protected GraphDatabaseService graphDatabaseService;
   protected Core core;
   protected ExecutionManager executionManager;
   
-  public CommandExecutor(GraphDatabaseService graphDatabaseService) {
+  public CommandExecutorNeo4j(GraphDatabaseService graphDatabaseService) {
     this.graphDatabaseService = graphDatabaseService;
   }
   
-  public <T> T execute(final Command<T> command) {
+  public <T> T execute(final ICommand<T> command) {
     
     // TODO: create interceptor stack analogue to the Activiti interceptor stack
     // to separate transaction interceptor from command execution interceptor
     
-    final CommandContext<T> commandContext = initialiseCommandContext(command);
+    final CommandContextNeo4j<T> commandContext = initialiseCommandContext(command);
     
     Transaction tx = graphDatabaseService.beginTx();
     try {
@@ -58,8 +59,8 @@ public class CommandExecutor {
     
   }
 
-  protected <T> CommandContext<T> initialiseCommandContext(final Command<T> command) {
-    final CommandContext<T> commandContext = new CommandContext<T>();
+  protected <T> CommandContextNeo4j<T> initialiseCommandContext(final ICommand<T> command) {
+    final CommandContextNeo4j<T> commandContext = new CommandContextNeo4j<T>();
     commandContext.setCore(core);
     commandContext.setExecutionManager(executionManager);
     

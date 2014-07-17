@@ -10,15 +10,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.activiti.neo4j;
+package org.activiti.neo4j.cmd;
 
 
+import org.activiti.neo4j.CommandContextNeo4j;
 
 /**
+ * Command interface represents an implementation of any one meaningful operation, usually
+ * with a database. This is analog of {@link org.activiti.engine.impl.interceptor.Command}
+ * interface, but it is used only by activiti-neo4j Services.
+ *
  * @author Joram Barrez
  */
-public interface Command<T> {
-  
-  void execute(CommandContext<T> commandContext);
-  
+public interface ICommand<T> {
+
+    /**
+     * Execute an activiti-neo4j specific command within the context.
+     *
+     * @param commandContextNeo4j
+     */
+    void execute(CommandContextNeo4j<T> commandContextNeo4j);
 }

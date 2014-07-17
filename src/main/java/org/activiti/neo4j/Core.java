@@ -20,8 +20,8 @@ package org.activiti.neo4j;
  */
 public interface Core {
   
-  void continueProcess(CommandContext<?> commandContext, Execution execution);
+  void continueProcess(CommandContextNeo4j<?> commandContext, Execution execution);
   
-  void signal(CommandContext<?> commandContext, Execution execution);
+  void signal(CommandContextNeo4j<?> commandContext, Execution execution);
 
 }
