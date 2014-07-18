@@ -1,18 +1,16 @@
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.io.InputStream;
-import java.util.List;
-
-import org.activiti.neo4j.ProcessDefinition;
-import org.activiti.neo4j.ProcessEngineNeo4jImpl;
+import org.activiti.engine.task.Task;
 import org.activiti.neo4j.ProcessEngineConfigurationNeo4jImpl;
-import org.activiti.neo4j.Task;
+import org.activiti.neo4j.ProcessEngineNeo4jImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.server.WrappingNeoServerBootstrapper;
 import org.neo4j.test.TestGraphDatabaseFactory;
+
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class ActivitiNeo4jTest {
 
@@ -41,14 +39,24 @@ public class ActivitiNeo4jTest {
   @Test
   public void simpleOneTaskProcessTest() throws Exception {
     // Deploy process
-    InputStream inputStream = this.getClass().getResourceAsStream("one-task-process.bpmn20.xml");
-    ProcessDefinition processDefinition = processEngine.getRepositoryService().deploy(inputStream);
+    //InputStream inputStream = this.getClass().getResourceAsStream("one-task-process.bpmn20.xml");
+    //ProcessDefinition processDefinition = processEngine.getRepositoryService().deploy(inputStream);
+
+      processEngine.getRepositoryService()
+              .createDeployment()
+              .name("expense-process.bar")
+              .addClasspathResource("/tests.bpmn")
+              .deploy();
     
     // Start process instance
     processEngine.getRuntimeService().startProcessInstanceByKey("oneTaskProcess");
     
     // See if there is a task for kermit
-    List<Task> tasks = processEngine.getTaskService().findTasksFor("kermit");
+    //List<Task> tasks = processEngine.getTaskService().findTasksFor("kermit");
+      List<Task> tasks = processEngine.getTaskService()
+              .createTaskQuery()
+              .taskAssignee("kermit")
+              .list();
     assertEquals(1, tasks.size());
     
     Task task = tasks.get(0);
@@ -85,14 +93,26 @@ public class ActivitiNeo4jTest {
   @Test
   public void parallelTest() throws Exception {
     // Deploy process
-    InputStream inputStream = this.getClass().getResourceAsStream("parallel-process.bpmn");
-    ProcessDefinition processDefinition = processEngine.getRepositoryService().deploy(inputStream);
+
+      //InputStream inputStream = this.getClass().getResourceAsStream("parallel-process.bpmn");
+    //ProcessDefinition processDefinition = processEngine.getRepositoryService().deploy(inputStream);
+
+      processEngine.getRepositoryService()
+              .createDeployment()
+              .name("expense-process.bar")
+              .addClasspathResource("/tests.bpmn")
+              .deploy();
     
     // Start process instance
     processEngine.getRuntimeService().startProcessInstanceByKey("parallelProcess");
     
     // two task should now be available for kermit
-    List<Task> tasks = processEngine.getTaskService().findTasksFor("kermit");
+    //List<Task> tasks = processEngine.getTaskService().findTasksFor("kermit");
+    List<Task> tasks = processEngine.getTaskService()
+              .createTaskQuery()
+              .taskAssignee("kermit")
+              .list();
+
     assertEquals(2, tasks.size());
     
     boolean foundTask1 = false;
@@ -111,8 +131,14 @@ public class ActivitiNeo4jTest {
   public void startMultipleProcessInstancesTest() throws Exception {
 
     // Deploy process
-    InputStream inputStream = this.getClass().getResourceAsStream("one-task-process.bpmn20.xml");
-    ProcessDefinition processDefinition = processEngine.getRepositoryService().deploy(inputStream);
+//    InputStream inputStream = this.getClass().getResourceAsStream("one-task-process.bpmn20.xml");
+//    ProcessDefinition processDefinition = processEngine.getRepositoryService().deploy(inputStream);
+
+      processEngine.getRepositoryService()
+              .createDeployment()
+              .name("expense-process.bar")
+              .addClasspathResource("/tests.bpmn")
+              .deploy();
     
     // Start a few  process instances
     for (int i=0; i<20; i++) {
@@ -120,7 +146,11 @@ public class ActivitiNeo4jTest {
     }
     
     // See if there are tasks for kermit
-    List<Task> tasks = processEngine.getTaskService().findTasksFor("kermit");
+    //List<Task> tasks = processEngine.getTaskService().findTasksFor("kermit");
+      List<Task> tasks = processEngine.getTaskService()
+              .createTaskQuery()
+              .taskAssignee("kermit")
+              .list();
     assertEquals(20, tasks.size());
     
   }

@@ -1,9 +1,10 @@
-package org.activiti.neo4j.cmd;
+package org.activiti.neo4j.cmd.impl;
 
 import org.activiti.engine.impl.cmd.DeployCmd;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.DeploymentBuilder;
 import org.activiti.neo4j.CommandContextNeo4j;
+import org.activiti.neo4j.cmd.ICommand;
 import org.activiti.neo4j.helper.DeploymentBuilderNeo4jImpl;
 
 /**

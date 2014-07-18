@@ -9,11 +9,12 @@ import org.activiti.engine.task.IdentityLink;
 import org.activiti.neo4j.*;
 import org.activiti.neo4j.ProcessDefinition;
 import org.activiti.neo4j.cmd.ICommand;
-import org.activiti.neo4j.cmd.DeployNeoCmd;
+import org.activiti.neo4j.cmd.impl.DeployNeoCmd;
 import org.activiti.neo4j.helper.BpmnModelUtil;
 import org.activiti.neo4j.helper.BpmnParser;
 import org.activiti.neo4j.helper.DeploymentBuilderNeo4jImpl;
 import org.activiti.validation.ValidationError;
+import org.apache.commons.lang.NotImplementedException;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -414,6 +415,6 @@ public class RepositoryServiceNeo4jImpl implements RepositoryService {
     }
 
     private void _notImplemented() {
-        throw new RuntimeException("Not Implemented yet.");
+        throw new NotImplementedException("The method is not implemented in " + this.getClass().getSimpleName());
     }
 }

@@ -15,8 +15,9 @@ package org.activiti.neo4j.manager;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.activiti.engine.impl.persistence.entity.TaskEntity;
+import org.activiti.engine.task.Task;
 import org.activiti.neo4j.Constants;
-import org.activiti.neo4j.Task;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.index.Index;
@@ -25,6 +26,7 @@ import org.neo4j.graphdb.index.Index;
 /**
  * @author Joram Barrez
  */
+@Deprecated
 public class NodeBasedTaskManager implements TaskManager {
   
   protected GraphDatabaseService graphDb;
@@ -33,8 +35,7 @@ public class NodeBasedTaskManager implements TaskManager {
     List<Task> tasks = new ArrayList<Task>();
     Index<Relationship> taskIndex = graphDb.index().forRelationships(Constants.TASK_INDEX);
     for (Relationship execution : taskIndex.get(Constants.INDEX_KEY_TASK_ASSIGNEE, assignee)) {
-      Task task = new Task();
-      task.setId(execution.getId());
+      Task task = new TaskEntity(execution.getId() + "");
       task.setName((String) execution.getProperty("name"));
       tasks.add(task);
     }

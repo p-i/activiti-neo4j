@@ -22,7 +22,7 @@ public class RuntimeService {
   public void startProcessInstanceByKey(final String key) {
     commandExecutor.execute(new ICommand<Void>() {
       
-      public void execute(CommandContextNeo4j<Void> commandContext) {
+      public Void execute(CommandContextNeo4j<Void> commandContext) {
         // Find process definition node
         
         // TODO: encapsulate in a manager!
@@ -47,6 +47,8 @@ public class RuntimeService {
         // Execute the process
         Execution execution = new NodeBasedExecution(relationShipExecution);
         commandContext.continueProcess(execution);
+
+          return null;
       }
       
     });

@@ -12,9 +12,9 @@
  */
 package org.activiti.neo4j.manager;
 
-import java.util.List;
+import org.activiti.engine.task.Task;
 
-import org.activiti.neo4j.Task;
+import java.util.List;
 
 
 /**
