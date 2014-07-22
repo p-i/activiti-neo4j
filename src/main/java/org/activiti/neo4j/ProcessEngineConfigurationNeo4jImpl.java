@@ -13,27 +13,25 @@
 package org.activiti.neo4j;
 
 import org.activiti.engine.*;
+import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
+import org.activiti.engine.impl.context.Context;
+import org.activiti.engine.impl.interceptor.CommandInterceptor;
+import org.activiti.engine.impl.util.DefaultClockImpl;
 import org.activiti.neo4j.behavior.BehaviorMapping;
 import org.activiti.neo4j.behavior.BehaviorMappingImpl;
 import org.activiti.neo4j.manager.ExecutionManager;
 import org.activiti.neo4j.manager.NodeBaseExecutionManager;
-import org.activiti.neo4j.manager.NodeBasedTaskManager;
 import org.activiti.neo4j.manager.TaskManager;
 import org.activiti.neo4j.services.RepositoryServiceNeo4jImpl;
+import org.activiti.neo4j.services.RuntimeServiceNeoImpl;
+import org.activiti.neo4j.services.TaskServiceNeoImpl;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.FormService;
-import org.activiti.engine.TaskService;
-import org.activiti.engine.HistoryService;
-import org.activiti.engine.IdentityService;
-import org.activiti.engine.ManagementService;
 
 
 /**
  * @author Joram Barrez
  */
-public class ProcessEngineConfigurationNeo4jImpl extends ProcessEngineConfiguration {
+public class ProcessEngineConfigurationNeo4jImpl extends ProcessEngineConfigurationImpl implements IProcessEngineConfiguration {
 
     protected GraphDatabaseService graphDatabaseService;
     protected BehaviorMapping behaviorMapping;
@@ -50,16 +48,21 @@ public class ProcessEngineConfigurationNeo4jImpl extends ProcessEngineConfigurat
     protected FormService formService;
     protected ManagementService managementService;
 
-
     public ProcessEngineNeo4jImpl buildProcessEngine() {
-        ProcessEngineNeo4jImpl processEngine = new ProcessEngineNeo4jImpl();
-        processEngine.setGraphDatabaseService(graphDatabaseService);
 
         initBehaviorMapping();
         initCore();
         initManagers();
-        initCommandExecutor(processEngine);
-        initServices(processEngine);
+        initCommandExecutor();
+        initServices();
+
+        ProcessEngineNeo4jImpl processEngine = new ProcessEngineNeo4jImpl(this);
+        processEngine.setGraphDatabaseService(graphDatabaseService);
+        processEngine.setCommandExecutor(commandExecutor);
+
+        Context.setProcessEngineConfiguration(this);
+
+        super.setClock(new DefaultClockImpl());
 
         return processEngine;
     }
@@ -74,35 +77,24 @@ public class ProcessEngineConfigurationNeo4jImpl extends ProcessEngineConfigurat
         this.core = core;
     }
 
+    // TODO: re-think, do we need managers?
     protected void initManagers() {
         NodeBaseExecutionManager nodeBaseExecutionManager = new NodeBaseExecutionManager();
         nodeBaseExecutionManager.setGraphDb(graphDatabaseService);
         this.executionManager = nodeBaseExecutionManager;
-
-        NodeBasedTaskManager nodeBasedTaskManager = new NodeBasedTaskManager();
-        nodeBasedTaskManager.setGraphDb(graphDatabaseService);
-        this.taskManager = nodeBasedTaskManager;
     }
 
-    protected void initCommandExecutor(ProcessEngineNeo4jImpl processEngine) {
-        CommandExecutorNeo4j commandExecutor = new CommandExecutorNeo4j(graphDatabaseService);
+    protected void initCommandExecutor() {
+        CommandExecutorNeo4j commandExecutor = new CommandExecutorNeo4j(graphDatabaseService, this);
         commandExecutor.setCore(core);
         commandExecutor.setExecutionManager(executionManager);
-
-        processEngine.setCommandExecutor(commandExecutor);
         this.commandExecutor = commandExecutor;
     }
 
-    protected void initServices(ProcessEngineNeo4jImpl processEngine) {
-        RepositoryService repositoryService = new RepositoryServiceNeo4jImpl(graphDatabaseService, commandExecutor);
-        processEngine.setRepositoryService(repositoryService);
-
-/*    RuntimeService runtimeService = new RuntimeService(graphDatabaseService, commandExecutor);
-    processEngine.setRuntimeService(runtimeService);
-
-    TaskService taskService = new TaskService(commandExecutor);
-    taskService.setTaskManager(taskManager);
-    processEngine.setTaskService(taskService);*/
+    protected void initServices() {
+        this.repositoryService = new RepositoryServiceNeo4jImpl(graphDatabaseService, commandExecutor);
+        this.runtimeService = new RuntimeServiceNeoImpl(graphDatabaseService, commandExecutor);
+        this.taskService = new TaskServiceNeoImpl(commandExecutor);
     }
 
     public GraphDatabaseService getGraphDatabaseService() {
@@ -147,5 +139,10 @@ public class ProcessEngineConfigurationNeo4jImpl extends ProcessEngineConfigurat
     @Override
     public ManagementService getManagementService() {
         return this.managementService;
+    }
+
+    @Override
+    protected CommandInterceptor createTransactionInterceptor() {
+        return null;
     }
 }

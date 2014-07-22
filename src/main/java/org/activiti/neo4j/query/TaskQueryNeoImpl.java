@@ -4,10 +4,10 @@ import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.task.DelegationState;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
-import org.activiti.neo4j.CommandContextNeo4j;
 import org.activiti.neo4j.Constants;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 
 import java.util.ArrayList;
@@ -21,73 +21,82 @@ public class TaskQueryNeoImpl implements TaskQuery {
 
     private final GraphDatabaseService graphDb;
 
-    protected String owner;
+    private String owner;
+    private String assignee;
+
 
     public TaskQueryNeoImpl(GraphDatabaseService graphDb) {
         this.graphDb = graphDb;
     }
 
     public List<Task> executeList() {
-        List<Task> tasks = new ArrayList<Task>();
-        Index<Relationship> taskIndex = graphDb.index().forRelationships(Constants.TASK_INDEX);
+        try (Transaction tx = graphDb.beginTx()) {
 
-        // TODO: rethink, how to generalise it and apply any parameter to the search criteria
-        for (Relationship execution : taskIndex.get(Constants.INDEX_KEY_TASK_ASSIGNEE, owner)) {
-            Task task = new TaskEntity(execution.getId() + "");
-            task.setName((String) execution.getProperty("name"));
-            tasks.add(task);
+            List<Task> tasks = new ArrayList<Task>();
+            Index<Relationship> taskIndex = graphDb.index().forRelationships(Constants.TASK_INDEX);
+
+            // TODO: rethink, how to generalise it and apply any parameter to the search criteria
+            for (Relationship execution : taskIndex.get(Constants.INDEX_KEY_TASK_ASSIGNEE, owner)) {
+                Task task = new TaskEntity(execution.getId() + "");
+                task.setName((String) execution.getProperty("name"));
+                tasks.add(task);
+            }
+
+            tx.success();
+
+            return tasks;
         }
-        return tasks;
     }
 
     @Override
     public TaskQuery taskId(String taskId) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskName(String name) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskNameLike(String nameLike) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskDescription(String description) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskDescriptionLike(String descriptionLike) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskPriority(Integer priority) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskMinPriority(Integer minPriority) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskMaxPriority(Integer maxPriority) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskAssignee(String assignee) {
-        return null;
+        this.assignee = assignee;
+        return this;
     }
 
     @Override
     public TaskQuery taskAssigneeLike(String assigneeLike) {
-        return null;
+        return this;
     }
 
     @Override
@@ -98,162 +107,162 @@ public class TaskQueryNeoImpl implements TaskQuery {
 
     @Override
     public TaskQuery taskOwnerLike(String ownerLike) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskUnassigned() {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskUnnassigned() {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskDelegationState(DelegationState delegationState) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskCandidateUser(String candidateUser) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskInvolvedUser(String involvedUser) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskCandidateGroup(String candidateGroup) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskCandidateOrAssigned(String userIdForCandidateAndAssignee) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskCandidateGroupIn(List<String> candidateGroups) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskTenantId(String tenantId) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskTenantIdLike(String tenantIdLike) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskWithoutTenantId() {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery processInstanceId(String processInstanceId) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery processInstanceBusinessKey(String processInstanceBusinessKey) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery processInstanceBusinessKeyLike(String processInstanceBusinessKeyLike) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery executionId(String executionId) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskCreatedOn(Date createTime) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskCreatedBefore(Date before) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskCreatedAfter(Date after) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery excludeSubtasks() {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskCategory(String category) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskDefinitionKey(String key) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskDefinitionKeyLike(String keyLike) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskVariableValueEquals(String variableName, Object variableValue) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskVariableValueEquals(Object variableValue) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskVariableValueEqualsIgnoreCase(String name, String value) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskVariableValueNotEquals(String variableName, Object variableValue) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskVariableValueNotEqualsIgnoreCase(String name, String value) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskVariableValueGreaterThan(String name, Object value) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskVariableValueGreaterThanOrEqual(String name, Object value) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskVariableValueLessThan(String name, Object value) {
-        return null;
+        return this;
     }
 
     @Override
     public TaskQuery taskVariableValueLessThanOrEqual(String name, Object value) {
-        return null;
+        return this;
     }
 
     @Override

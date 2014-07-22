@@ -14,6 +14,7 @@ package org.activiti.neo4j;
 
 import java.util.LinkedList;
 
+import org.activiti.engine.IProcessEngineConfiguration;
 import org.activiti.neo4j.manager.ExecutionManager;
 
 
@@ -27,8 +28,9 @@ public class CommandContextNeo4j<T> implements EngineOperations {
   
   protected LinkedList<Runnable> agenda = new LinkedList<Runnable>();
   protected T result = null;
-  
-  public void continueProcess(Execution execution) {
+  private IProcessEngineConfiguration processEngineConfiguration;
+
+    public void continueProcess(Execution execution) {
     core.continueProcess(this, execution);
   }
   
@@ -36,8 +38,9 @@ public class CommandContextNeo4j<T> implements EngineOperations {
     core.signal(this, execution);
   }
   
-  /* package */ CommandContextNeo4j() {
+  /* package */ CommandContextNeo4j(IProcessEngineConfiguration processEngineConfiguration) {
     this.agenda = new LinkedList<Runnable>();
+    this.processEngineConfiguration = processEngineConfiguration;
   }
 
   public LinkedList<Runnable> getAgenda() {
@@ -71,5 +74,8 @@ public class CommandContextNeo4j<T> implements EngineOperations {
   public void setExecutionManager(ExecutionManager executionManager) {
     this.executionManager = executionManager;
   }
-  
+
+    public IProcessEngineConfiguration getProcessEngineConfiguration() {
+        return processEngineConfiguration;
+    }
 }

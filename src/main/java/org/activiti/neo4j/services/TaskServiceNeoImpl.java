@@ -9,13 +9,14 @@ import org.activiti.neo4j.CommandExecutorNeo4j;
 
 import org.activiti.neo4j.manager.TaskManager;
 import org.activiti.neo4j.query.TaskQueryNeoImpl;
-import org.apache.commons.lang.NotImplementedException;
 
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
+import static org.activiti.neo4j.utils.Utils.notImplemented;
 
 public class TaskServiceNeoImpl extends ServiceImpl implements TaskService {
 
@@ -59,155 +60,155 @@ public class TaskServiceNeoImpl extends ServiceImpl implements TaskService {
 
     @Override
     public Task newTask() {
-        _notFound();
+        notImplemented();
         return null;
     }
 
     @Override
     public Task newTask(String taskId) {
-        _notFound();
+        notImplemented();
         return null;
     }
 
     @Override
     public void saveTask(Task task) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void deleteTask(String taskId) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void deleteTasks(Collection<String> taskIds) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void deleteTask(String taskId, boolean cascade) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void deleteTasks(Collection<String> taskIds, boolean cascade) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void deleteTask(String taskId, String deleteReason) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void deleteTasks(Collection<String> taskIds, String deleteReason) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void claim(String taskId, String userId) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void unclaim(String taskId) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void complete(String taskId) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void delegateTask(String taskId, String userId) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void resolveTask(String taskId) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void resolveTask(String taskId, Map<String, Object> variables) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void complete(String taskId, Map<String, Object> variables) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void complete(String taskId, Map<String, Object> variables, boolean localScope) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void setAssignee(String taskId, String userId) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void setOwner(String taskId, String userId) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public List<IdentityLink> getIdentityLinksForTask(String taskId) {
-        _notFound();
+        notImplemented();
         return null;
     }
 
     @Override
     public void addCandidateUser(String taskId, String userId) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void addCandidateGroup(String taskId, String groupId) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void addUserIdentityLink(String taskId, String userId, String identityLinkType) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void addGroupIdentityLink(String taskId, String groupId, String identityLinkType) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void deleteCandidateUser(String taskId, String userId) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void deleteCandidateGroup(String taskId, String groupId) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void deleteUserIdentityLink(String taskId, String userId, String identityLinkType) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void deleteGroupIdentityLink(String taskId, String groupId, String identityLinkType) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void setPriority(String taskId, int priority) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void setDueDate(String taskId, Date dueDate) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
@@ -217,217 +218,217 @@ public class TaskServiceNeoImpl extends ServiceImpl implements TaskService {
 
     @Override
     public NativeTaskQuery createNativeTaskQuery() {
-        _notFound();
+        notImplemented();
         return null;
     }
 
     @Override
     public void setVariable(String taskId, String variableName, Object value) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void setVariables(String taskId, Map<String, ? extends Object> variables) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void setVariableLocal(String taskId, String variableName, Object value) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void setVariablesLocal(String taskId, Map<String, ? extends Object> variables) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public Object getVariable(String taskId, String variableName) {
-        _notFound();
+        notImplemented();
         return null;
     }
 
     @Override
     public boolean hasVariable(String taskId, String variableName) {
-        _notFound();
+        notImplemented();
         return false;
     }
 
     @Override
     public Object getVariableLocal(String taskId, String variableName) {
-        _notFound();
+        notImplemented();
         return null;
     }
 
     @Override
     public boolean hasVariableLocal(String taskId, String variableName) {
-        _notFound();
+        notImplemented();
         return false;
     }
 
     @Override
     public Map<String, Object> getVariables(String taskId) {
-        _notFound();
+        notImplemented();
         return null;
     }
 
     @Override
     public Map<String, Object> getVariablesLocal(String taskId) {
-        _notFound();
+        notImplemented();
         return null;
     }
 
     @Override
     public Map<String, Object> getVariables(String taskId, Collection<String> variableNames) {
-        _notFound();
+        notImplemented();
         return null;
     }
 
     @Override
     public Map<String, Object> getVariablesLocal(String taskId, Collection<String> variableNames) {
-        _notFound();
+        notImplemented();
         return null;
     }
 
     @Override
     public void removeVariable(String taskId, String variableName) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void removeVariableLocal(String taskId, String variableName) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void removeVariables(String taskId, Collection<String> variableNames) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void removeVariablesLocal(String taskId, Collection<String> variableNames) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public Comment addComment(String taskId, String processInstanceId, String message) {
-        _notFound();
+        notImplemented();
         return null;
     }
 
     @Override
     public Comment addComment(String taskId, String processInstanceId, String type, String message) {
-        _notFound();
+        notImplemented();
         return null;
     }
 
     @Override
     public Comment getComment(String commentId) {
-        _notFound();
+        notImplemented();
         return null;
     }
 
     @Override
     public void deleteComments(String taskId, String processInstanceId) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public void deleteComment(String commentId) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public List<Comment> getTaskComments(String taskId) {
-        _notFound();
+        notImplemented();
         return null;
     }
 
     @Override
     public List<Comment> getTaskComments(String taskId, String type) {
-        _notFound();
+        notImplemented();
         return null;
     }
 
     @Override
     public List<Comment> getCommentsByType(String type) {
-        _notFound();
+        notImplemented();
         return null;
     }
 
     @Override
     public List<Event> getTaskEvents(String taskId) {
-        _notFound();
+        notImplemented();
         return null;
     }
 
     @Override
     public Event getEvent(String eventId) {
-        _notFound();
+        notImplemented();
         return null;
     }
 
     @Override
     public List<Comment> getProcessInstanceComments(String processInstanceId) {
-        _notFound();
+        notImplemented();
+        return null;
+    }
+
+    @Override
+    public List<Comment> getProcessInstanceComments(String s, String s2) {
+        notImplemented();
         return null;
     }
 
     @Override
     public Attachment createAttachment(String attachmentType, String taskId, String processInstanceId, String attachmentName, String attachmentDescription, InputStream content) {
-        _notFound();
+        notImplemented();
         return null;
     }
 
     @Override
     public Attachment createAttachment(String attachmentType, String taskId, String processInstanceId, String attachmentName, String attachmentDescription, String url) {
-        _notFound();
+        notImplemented();
         return null;
     }
 
     @Override
     public void saveAttachment(Attachment attachment) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public Attachment getAttachment(String attachmentId) {
-        _notFound();
+        notImplemented();
         return null;
     }
 
     @Override
     public InputStream getAttachmentContent(String attachmentId) {
-        _notFound();
+        notImplemented();
         return null;
     }
 
     @Override
     public List<Attachment> getTaskAttachments(String taskId) {
-        _notFound();
+        notImplemented();
         return null;
     }
 
     @Override
     public List<Attachment> getProcessInstanceAttachments(String processInstanceId) {
-        _notFound();
+        notImplemented();
         return null;
     }
 
     @Override
     public void deleteAttachment(String attachmentId) {
-        _notFound();
+        notImplemented();
     }
 
     @Override
     public List<Task> getSubTasks(String parentTaskId) {
-        _notFound();
+        notImplemented();
         return null;
     }
-
-    private void _notFound() {
-        _notFound();
-        throw new NotImplementedException("The method is not implemented in " + this.getClass().getSimpleName());
-    }
-
 }

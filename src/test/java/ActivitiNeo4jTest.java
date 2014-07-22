@@ -1,12 +1,15 @@
+import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.engine.task.Task;
 import org.activiti.neo4j.ProcessEngineConfigurationNeo4jImpl;
 import org.activiti.neo4j.ProcessEngineNeo4jImpl;
+import org.activiti.neo4j.helper.BpmnParser;
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.server.WrappingNeoServerBootstrapper;
 import org.neo4j.test.TestGraphDatabaseFactory;
 
+import java.io.InputStream;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -42,12 +45,15 @@ public class ActivitiNeo4jTest {
     //InputStream inputStream = this.getClass().getResourceAsStream("one-task-process.bpmn20.xml");
     //ProcessDefinition processDefinition = processEngine.getRepositoryService().deploy(inputStream);
 
+    //  InputStream inputStream = this.getClass().getResourceAsStream("one-task-process.bpmn20.xml");
+      //BpmnModel bpmnModel = BpmnParser.parse(inputStream);
+
       processEngine.getRepositoryService()
               .createDeployment()
               .name("expense-process.bar")
-              .addClasspathResource("/tests.bpmn")
+              .addClasspathResource("one-task-process.bpmn20.xml")
               .deploy();
-    
+
     // Start process instance
     processEngine.getRuntimeService().startProcessInstanceByKey("oneTaskProcess");
     
@@ -100,7 +106,7 @@ public class ActivitiNeo4jTest {
       processEngine.getRepositoryService()
               .createDeployment()
               .name("expense-process.bar")
-              .addClasspathResource("/tests.bpmn")
+              .addClasspathResource("parallel-process.bpmn")
               .deploy();
     
     // Start process instance
@@ -137,7 +143,7 @@ public class ActivitiNeo4jTest {
       processEngine.getRepositoryService()
               .createDeployment()
               .name("expense-process.bar")
-              .addClasspathResource("/tests.bpmn")
+              .addClasspathResource("one-task-process.bpmn20.xml")
               .deploy();
     
     // Start a few  process instances

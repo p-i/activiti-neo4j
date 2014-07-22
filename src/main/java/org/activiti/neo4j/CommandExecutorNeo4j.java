@@ -12,6 +12,7 @@
  */
 package org.activiti.neo4j;
 
+import org.activiti.engine.IProcessEngineConfiguration;
 import org.activiti.neo4j.cmd.ICommand;
 import org.activiti.neo4j.manager.ExecutionManager;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -27,9 +28,11 @@ public class CommandExecutorNeo4j {
   protected GraphDatabaseService graphDatabaseService;
   protected Core core;
   protected ExecutionManager executionManager;
+  private final IProcessEngineConfiguration processEngineConfiguration;
   
-  public CommandExecutorNeo4j(GraphDatabaseService graphDatabaseService) {
+  public CommandExecutorNeo4j(GraphDatabaseService graphDatabaseService, IProcessEngineConfiguration processEngineConfiguration) {
     this.graphDatabaseService = graphDatabaseService;
+      this.processEngineConfiguration = processEngineConfiguration;
   }
   
   public <T> T execute(final ICommand<T> command) {
@@ -38,9 +41,8 @@ public class CommandExecutorNeo4j {
     // to separate transaction interceptor from command execution interceptor
     
     final CommandContextNeo4j<T> commandContext = initialiseCommandContext(command);
-    
-    Transaction tx = graphDatabaseService.beginTx();
-    try {
+
+    try (Transaction tx = graphDatabaseService.beginTx()) {
       
       while (!commandContext.getAgenda().isEmpty()) {
         Runnable runnable = commandContext.getAgenda().poll();
@@ -48,11 +50,6 @@ public class CommandExecutorNeo4j {
       }
       
       tx.success();
-    } catch (Exception e) {
-      e.printStackTrace();
-      tx.failure(); 
-    } finally {
-      tx.finish();
     }
     
     return commandContext.getResult();
@@ -60,10 +57,10 @@ public class CommandExecutorNeo4j {
   }
 
   protected <T> CommandContextNeo4j<T> initialiseCommandContext(final ICommand<T> command) {
-    final CommandContextNeo4j<T> commandContext = new CommandContextNeo4j<T>();
+    final CommandContextNeo4j<T> commandContext = new CommandContextNeo4j<T>(processEngineConfiguration);
     commandContext.setCore(core);
     commandContext.setExecutionManager(executionManager);
-    
+
     commandContext.getAgenda().add(new Runnable() {
       
       public void run() {
