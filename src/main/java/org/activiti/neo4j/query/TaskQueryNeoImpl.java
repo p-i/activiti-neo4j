@@ -36,7 +36,7 @@ public class TaskQueryNeoImpl implements TaskQuery {
             Index<Relationship> taskIndex = graphDb.index().forRelationships(Constants.TASK_INDEX);
 
             // TODO: rethink, how to generalise it and apply any parameter to the search criteria
-            for (Relationship execution : taskIndex.get(Constants.INDEX_KEY_TASK_ASSIGNEE, owner)) {
+            for (Relationship execution : taskIndex.get(Constants.INDEX_KEY_TASK_ASSIGNEE, assignee)) {
                 Task task = new TaskEntity(execution.getId() + "");
                 task.setName((String) execution.getProperty("name"));
                 tasks.add(task);

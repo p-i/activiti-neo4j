@@ -38,40 +38,34 @@ public class ActivitiNeo4jTest {
     processEngineConfiguration.setGraphDatabaseService(graphDb);
     processEngine = processEngineConfiguration.buildProcessEngine();
   }
-  
-  @Test
-  public void simpleOneTaskProcessTest() throws Exception {
-    // Deploy process
-    //InputStream inputStream = this.getClass().getResourceAsStream("one-task-process.bpmn20.xml");
-    //ProcessDefinition processDefinition = processEngine.getRepositoryService().deploy(inputStream);
 
-    //  InputStream inputStream = this.getClass().getResourceAsStream("one-task-process.bpmn20.xml");
-      //BpmnModel bpmnModel = BpmnParser.parse(inputStream);
+    @Test
+    public void simpleOneTaskProcessTest() throws Exception {
 
-      processEngine.getRepositoryService()
-              .createDeployment()
-              .name("expense-process.bar")
-              .addClasspathResource("one-task-process.bpmn20.xml")
-              .deploy();
+        // Deploy process
+        processEngine.getRepositoryService()
+                .createDeployment()
+                .name("expense-process.bar")
+                .addClasspathResource("one-task-process.bpmn20.xml")
+                .deploy();
 
-    // Start process instance
-    processEngine.getRuntimeService().startProcessInstanceByKey("oneTaskProcess");
-    
-    // See if there is a task for kermit
-    //List<Task> tasks = processEngine.getTaskService().findTasksFor("kermit");
-      List<Task> tasks = processEngine.getTaskService()
-              .createTaskQuery()
-              .taskAssignee("kermit")
-              .list();
-    assertEquals(1, tasks.size());
-    
-    Task task = tasks.get(0);
-    assertEquals("My task", task.getName());
-    
-    // Complete task
-    processEngine.getTaskService().complete(task.getId());
-  
-  }
+        // Start process instance
+        processEngine.getRuntimeService().startProcessInstanceByKey("oneTaskProcess");
+
+        // See if there is a task for kermit
+        List<Task> tasks = processEngine.getTaskService()
+                .createTaskQuery()
+                .taskAssignee("kermit")
+                .list();
+        assertEquals(1, tasks.size());
+
+        Task task = tasks.get(0);
+        assertEquals("My task", task.getName());
+
+        // Complete task
+        processEngine.getTaskService().complete(task.getId());
+
+    }
   
 //  @Test
 //  public void startALotOfProcesses() throws Exception {

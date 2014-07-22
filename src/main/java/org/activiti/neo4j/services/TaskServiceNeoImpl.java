@@ -11,10 +11,7 @@ import org.activiti.neo4j.manager.TaskManager;
 import org.activiti.neo4j.query.TaskQueryNeoImpl;
 
 import java.io.InputStream;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.activiti.neo4j.utils.Utils.notImplemented;
 
@@ -29,7 +26,7 @@ public class TaskServiceNeoImpl extends ServiceImpl implements TaskService {
     }
 
 
-    public List<Task> findTasksFor(final String assignee) {
+    private List<Task> findTasksFor(final String assignee) {
         return commandExecutor.execute(new ICommand<List<Task>>() {
             public List<Task> execute(CommandContextNeo4j<List<Task>> commandContext) {
                 List<Task> tasks = taskManager.getTasksByAssignee(assignee);
@@ -38,25 +35,6 @@ public class TaskServiceNeoImpl extends ServiceImpl implements TaskService {
             }
         });
     }
-
-/*
-  public void complete(final long taskId) {
-    commandExecutor.execute(new ICommand<Void>() {
-      public void execute(CommandContextNeo4j<Void> commandContext) {
-        commandContext.signal(commandContext.getExecutionManager().getExecutionById(taskId));
-      }
-    });
-  }
-
-  public TaskManager getTaskManager() {
-    return taskManager;
-  }
-
-  public void setTaskManager(TaskManager taskManager) {
-    this.taskManager = taskManager;
-  }
-*/
-
 
     @Override
     public Task newTask() {
@@ -116,8 +94,15 @@ public class TaskServiceNeoImpl extends ServiceImpl implements TaskService {
     }
 
     @Override
-    public void complete(String taskId) {
-        notImplemented();
+    public void complete(final String taskId) {
+        commandExecutor.execute(new ICommand() {
+
+            @Override
+            public Object execute(CommandContextNeo4j commandContext) {
+                commandContext.signal(commandContext.getExecutionManager().getExecutionById(Long.parseLong(taskId)));
+                return null;
+            }
+        });
     }
 
     @Override
@@ -158,7 +143,7 @@ public class TaskServiceNeoImpl extends ServiceImpl implements TaskService {
     @Override
     public List<IdentityLink> getIdentityLinksForTask(String taskId) {
         notImplemented();
-        return null;
+        return new ArrayList<IdentityLink>();
     }
 
     @Override
