@@ -14,15 +14,14 @@ import org.activiti.neo4j.RelTypes;
 import org.activiti.neo4j.cmd.ICommand;
 import org.activiti.neo4j.helper.BpmnModelUtil;
 import org.activiti.neo4j.helper.BpmnParser;
+import org.apache.commons.collections.Predicate;
+import org.apache.commons.collections.SetUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.index.Index;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -51,15 +50,39 @@ public class DeployNeoCmd<T> extends DeployCmd implements ICommand<Deployment> {
         DeploymentEntity deployment = deploymentBuilder.getDeployment();
         deployment.setDeploymentTime(commandContext.getProcessEngineConfiguration().getClock().getCurrentTime());
 
-        // TODO: Remove the hardcode
-        ResourceEntity resource = deployment.getResource("one-task-process.bpmn20.xml");
+        Map<String, ResourceEntity> mapResources = deployment.getResources();
+
+        // get all the resources (only bpmn 2.0 XML files)
+        final Set<String> keySet = SetUtils.predicatedSet(mapResources.keySet(), new Predicate() {
+            @Override
+            public boolean evaluate(Object key) {
+                return key.toString().endsWith(".bpmn20.xml") || key.toString().endsWith(".bpmn");
+            }
+        });
+
+        // put each resource (process) to the underlying data store
+        for (String resourceKey : keySet) {
+            this._persistProcessInDatastore(deployment, resourceKey);
+        }
+
+        commandContext.setResult(deployment);
+
+        return deployment;
+    }
+
+    /**
+     * Process resource as BPMN model and put it to a datastore
+     *
+     * @param deployment
+     * @param resourceKey
+     */
+    private void _persistProcessInDatastore(DeploymentEntity deployment, String resourceKey) {
+
+        ResourceEntity resource = deployment.getResource(resourceKey);
         ByteArrayInputStream inputStream = new ByteArrayInputStream(resource.getBytes());
 
         BpmnModel bpmnModel = BpmnParser.parse(inputStream);
         Process process = bpmnModel.getProcesses().get(0);
-
-        // Create Node representation
-        ProcessDefinition processDefinition = null;
 
         nodeMap = new HashMap<String, Node>();
         sequenceFlows = new HashSet<SequenceFlow>();
@@ -84,7 +107,9 @@ public class DeployNeoCmd<T> extends DeployCmd implements ICommand<Deployment> {
 
         // Create process definition node
         Node processDefinitionNode = graphDb.createNode();
-        processDefinition = new ProcessDefinition();
+
+        // Create Node representation
+        ProcessDefinition processDefinition = new ProcessDefinition();
         processDefinition.setId(processDefinitionNode.getId());
         processDefinition.setKey(process.getId());
 
@@ -99,10 +124,6 @@ public class DeployNeoCmd<T> extends DeployCmd implements ICommand<Deployment> {
         // Add process definition to index
         Index<Node> processDefinitionIndex = graphDb.index().forNodes(Constants.PROCESS_DEFINITION_INDEX);
         processDefinitionIndex.putIfAbsent(processDefinitionNode, Constants.INDEX_KEY_PROCESS_DEFINITION_KEY, processDefinition.getKey());
-
-        commandContext.setResult(deployment);
-
-        return deployment;
     }
 
 
