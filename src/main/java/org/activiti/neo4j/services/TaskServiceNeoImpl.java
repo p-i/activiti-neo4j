@@ -19,21 +19,9 @@ public class TaskServiceNeoImpl extends ServiceImpl implements TaskService {
 
     // TODO: can be put in a command service super class
     protected CommandExecutorNeo4j commandExecutor;
-    protected TaskManager taskManager;
 
     public TaskServiceNeoImpl(CommandExecutorNeo4j commandExecutor) {
         this.commandExecutor = commandExecutor;
-    }
-
-
-    private List<Task> findTasksFor(final String assignee) {
-        return commandExecutor.execute(new ICommand<List<Task>>() {
-            public List<Task> execute(CommandContextNeo4j<List<Task>> commandContext) {
-                List<Task> tasks = taskManager.getTasksByAssignee(assignee);
-                commandContext.setResult(tasks);
-                return tasks;
-            }
-        });
     }
 
     @Override
