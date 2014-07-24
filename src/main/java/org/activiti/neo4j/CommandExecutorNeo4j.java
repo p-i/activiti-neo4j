@@ -31,8 +31,8 @@ public class CommandExecutorNeo4j {
   private final IProcessEngineConfiguration processEngineConfiguration;
   
   public CommandExecutorNeo4j(GraphDatabaseService graphDatabaseService, IProcessEngineConfiguration processEngineConfiguration) {
-    this.graphDatabaseService = graphDatabaseService;
-      this.processEngineConfiguration = processEngineConfiguration;
+        this.graphDatabaseService = graphDatabaseService;
+        this.processEngineConfiguration = processEngineConfiguration;
   }
   
   public <T> T execute(final ICommand<T> command) {

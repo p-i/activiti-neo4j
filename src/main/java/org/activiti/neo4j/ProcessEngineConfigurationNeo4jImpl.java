@@ -25,13 +25,15 @@ import org.activiti.neo4j.manager.TaskManager;
 import org.activiti.neo4j.services.RepositoryServiceNeo4jImpl;
 import org.activiti.neo4j.services.RuntimeServiceNeoImpl;
 import org.activiti.neo4j.services.TaskServiceNeoImpl;
+import org.activiti.spring.SpringProcessEngineConfiguration;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
 
 /**
  * @author Joram Barrez
  */
-public class ProcessEngineConfigurationNeo4jImpl extends ProcessEngineConfigurationImpl implements IProcessEngineConfiguration {
+public class ProcessEngineConfigurationNeo4jImpl extends SpringProcessEngineConfiguration implements IProcessEngineConfiguration {
 
     protected GraphDatabaseService graphDatabaseService;
     protected BehaviorMapping behaviorMapping;
@@ -48,7 +50,12 @@ public class ProcessEngineConfigurationNeo4jImpl extends ProcessEngineConfigurat
     protected FormService formService;
     protected ManagementService managementService;
 
-    public ProcessEngineNeo4jImpl buildProcessEngine() {
+    @Override
+    public ProcessEngine buildProcessEngine() {
+
+        if (this.graphDatabaseService == null) {
+            this.graphDatabaseService = new GraphDatabaseFactory().newEmbeddedDatabase("target/testDB");
+        }
 
         initBehaviorMapping();
         initCore();

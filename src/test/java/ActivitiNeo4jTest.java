@@ -3,9 +3,11 @@ import org.activiti.engine.task.Task;
 import org.activiti.neo4j.ProcessEngineConfigurationNeo4jImpl;
 import org.activiti.neo4j.ProcessEngineNeo4jImpl;
 import org.activiti.neo4j.helper.BpmnParser;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.server.WrappingNeoServerBootstrapper;
 import org.neo4j.test.TestGraphDatabaseFactory;
 
@@ -26,17 +28,13 @@ public class ActivitiNeo4jTest {
 
   @Before
   public void setupDatabase() {
-    
-//    graphDb = new GraphDatabaseFactory().newEmbeddedDatabase("target/testDB");
-    graphDb = new TestGraphDatabaseFactory().newImpermanentDatabaseBuilder().newGraphDatabase();
-    registerShutdownHook(graphDb);
-    
-//    server = new WrappingNeoServerBootstrapper((GraphDatabaseAPI) graphDb);
-//    server.start();
-    
+
+    this.graphDb = new TestGraphDatabaseFactory().newImpermanentDatabaseBuilder().newGraphDatabase();
+
     ProcessEngineConfigurationNeo4jImpl processEngineConfiguration = new ProcessEngineConfigurationNeo4jImpl();
-    processEngineConfiguration.setGraphDatabaseService(graphDb);
-    processEngine = processEngineConfiguration.buildProcessEngine();
+    processEngineConfiguration.setGraphDatabaseService(this.graphDb);
+    processEngine = (ProcessEngineNeo4jImpl) processEngineConfiguration.buildProcessEngine();
+    registerShutdownHook();
   }
 
     @Test
@@ -164,23 +162,26 @@ public class ActivitiNeo4jTest {
 //    // Start process instance
 //    processEngine.getRuntimeService().startProcessInstanceByKey("customJavaLogic");
 //  }
-  
 
-  private void registerShutdownHook(final GraphDatabaseService graphDb) {
-    Runtime.getRuntime().addShutdownHook(new Thread() {
 
-      @Override
-      public void run() {
-        graphDb.shutdown();
-        
-        if (server != null) { 
-          server.stop();
-        }
+    private void registerShutdownHook() {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+
+            @Override
+            public void run() {
+                cleanUp();
+            }
+        });
+    }
+
+    @After
+    public void cleanUp() {
+        this.graphDb.shutdown();
+
         System.out.println();
         System.out.println("Graph database shut down");
-      }
-    });
-  }
-  
+    }
+
+
 }
 

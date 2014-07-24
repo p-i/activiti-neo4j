@@ -49,6 +49,11 @@
 			<artifactId>activiti-bpmn-converter</artifactId>
 			<version>${activiti.version}</version>
 		</dependency>
+        <dependency>
+            <groupId>org.activiti</groupId>
+            <artifactId>activiti-spring</artifactId>
+            <version>${activiti.version}</version>
+        </dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
