@@ -23,7 +23,7 @@ import org.activiti.neo4j.RelTypes;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-
+import static org.activiti.neo4j.utils.Utils.notImplemented;
 
 /**
  * @author Joram Barrez
@@ -45,7 +45,7 @@ public class NodeBasedProcessInstance implements ProcessInstance {
     
     variableNode.setProperty(variableName, variableValue);
   }
-  
+
   protected Node getVariableNode() {
     Iterator<Relationship> variableRelationShipIterator = 
             processInstanceNode.getRelationships(Direction.OUTGOING, RelTypes.VARIABLE).iterator();
@@ -84,7 +84,7 @@ public class NodeBasedProcessInstance implements ProcessInstance {
     
     processInstanceNode.delete();
   }
-  
+
   public List<Execution> getExecutions() {
     List<Execution> executions = new ArrayList<Execution>();
     for (Relationship executionRelationship : processInstanceNode.getRelationships(Direction.OUTGOING, RelTypes.EXECUTION)) {
@@ -92,5 +92,51 @@ public class NodeBasedProcessInstance implements ProcessInstance {
     }
     return executions;
   }
-  
+
+
+    @Override
+    public ProcessInstance getProcessInstance() {
+        notImplemented();
+        return null;
+    }
+
+    @Override
+    public Activity getActivity() {
+        notImplemented();
+        return null;
+    }
+
+    @Override
+    public Object getVariable(String name) {
+        notImplemented();
+        return null;
+    }
+
+    @Override
+    public void addToIndex(String namespace, String key, Object value) {
+        notImplemented();
+    }
+
+    @Override
+    public boolean hasProperty(String property) {
+        notImplemented();
+        return false;
+    }
+
+    @Override
+    public Object getProperty(String property) {
+        notImplemented();
+        return null;
+    }
+
+    @Override
+    public void setProperty(String property, Object value) {
+        notImplemented();
+    }
+
+    @Override
+    public Object removeProperty(String property) {
+        notImplemented();
+        return null;
+    }
 }

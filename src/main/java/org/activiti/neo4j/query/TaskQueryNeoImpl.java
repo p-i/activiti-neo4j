@@ -1,14 +1,11 @@
 package org.activiti.neo4j.query;
 
-import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.task.DelegationState;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
-import org.activiti.neo4j.Constants;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.index.Index;
+import org.activiti.neo4j.persistence.repository.UserTaskNeoRepository;
+import org.apache.commons.collections.IteratorUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -19,12 +16,13 @@ import java.util.List;
  */
 public class TaskQueryNeoImpl implements TaskQuery {
 
-    private final GraphDatabaseService graphDb;
+    @Autowired
+    private UserTaskNeoRepository userTaskRepo;
 
     private String owner;
     private String assignee;
 
-
+/*
     public TaskQueryNeoImpl(GraphDatabaseService graphDb) {
         this.graphDb = graphDb;
     }
@@ -46,6 +44,14 @@ public class TaskQueryNeoImpl implements TaskQuery {
 
             return tasks;
         }
+    }
+*/
+    @Override
+    public List<Task> list() {
+        if (this.assignee != null) {
+            return IteratorUtils.toList(userTaskRepo.findUserTasksByAssignee(this.assignee).iterator());
+        }
+        return new ArrayList<Task>();
     }
 
     @Override
@@ -453,11 +459,6 @@ public class TaskQueryNeoImpl implements TaskQuery {
     @Override
     public Task singleResult() {
         return null;
-    }
-
-    @Override
-    public List<Task> list() {
-        return executeList();
     }
 
     @Override

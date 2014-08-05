@@ -15,8 +15,7 @@ package org.activiti.neo4j;
 import org.activiti.engine.IProcessEngineConfiguration;
 import org.activiti.neo4j.cmd.ICommand;
 import org.activiti.neo4j.manager.ExecutionManager;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -24,62 +23,43 @@ import org.neo4j.graphdb.Transaction;
  * 
  */
 public class CommandExecutorNeo4j {
-  
-  protected GraphDatabaseService graphDatabaseService;
-  protected Core core;
-  protected ExecutionManager executionManager;
-  private final IProcessEngineConfiguration processEngineConfiguration;
-  
-  public CommandExecutorNeo4j(GraphDatabaseService graphDatabaseService, IProcessEngineConfiguration processEngineConfiguration) {
-        this.graphDatabaseService = graphDatabaseService;
-        this.processEngineConfiguration = processEngineConfiguration;
-  }
-  
-  public <T> T execute(final ICommand<T> command) {
-    
-    // TODO: create interceptor stack analogue to the Activiti interceptor stack
-    // to separate transaction interceptor from command execution interceptor
-    
-    final CommandContextNeo4j<T> commandContext = initialiseCommandContext(command);
 
-    try (Transaction tx = graphDatabaseService.beginTx()) {
-      
-      while (!commandContext.getAgenda().isEmpty()) {
-        Runnable runnable = commandContext.getAgenda().poll();
-        runnable.run();
-      }
-      
-      tx.success();
+    private Core core;
+
+    private IProcessEngineConfiguration processEngineConfiguration;
+
+    private ExecutionManager executionManager;
+
+    public <T> T execute(final ICommand<T> command) {
+
+        // TODO: create interceptor stack analogue to the Activiti interceptor stack
+        // to separate transaction interceptor from command execution interceptor
+
+        final CommandContextNeo4j<T> commandContext = initialiseCommandContext(command);
+
+        while (!commandContext.getAgenda().isEmpty()) {
+            Runnable runnable = commandContext.getAgenda().poll();
+            runnable.run();
+        }
+
+        return commandContext.getResult();
     }
-    
-    return commandContext.getResult();
-    
-  }
 
-  protected <T> CommandContextNeo4j<T> initialiseCommandContext(final ICommand<T> command) {
-    final CommandContextNeo4j<T> commandContext = new CommandContextNeo4j<T>(processEngineConfiguration);
-    commandContext.setCore(core);
-    commandContext.setExecutionManager(executionManager);
+    protected <T> CommandContextNeo4j<T> initialiseCommandContext(final ICommand<T> command) {
+        final CommandContextNeo4j<T> commandContext = new CommandContextNeo4j<T>(processEngineConfiguration);
+        commandContext.setCore(core);
+        //commandContext.setExecutionManager(executionManager);
 
-    commandContext.getAgenda().add(new Runnable() {
-      
-      public void run() {
-        command.execute(commandContext);
-      }
-      
-    });
-    return commandContext;
-  }
+        commandContext.getAgenda().add(new Runnable() {
 
-  
-  public GraphDatabaseService getGraphDatabaseService() {
-    return graphDatabaseService;
-  }
+            public void run() {
+                command.execute(commandContext);
+            }
 
-  
-  public void setGraphDatabaseService(GraphDatabaseService graphDatabaseService) {
-    this.graphDatabaseService = graphDatabaseService;
-  }
+        });
+        return commandContext;
+    }
+
 
   public Core getCore() {
     return core;
@@ -89,12 +69,11 @@ public class CommandExecutorNeo4j {
     this.core = core;
   }
 
-  public ExecutionManager getExecutionManager() {
-    return executionManager;
-  }
+    public void setProcessEngineConfiguration(IProcessEngineConfiguration processEngineConfiguration) {
+        this.processEngineConfiguration = processEngineConfiguration;
+    }
 
-  public void setExecutionManager(ExecutionManager executionManager) {
-    this.executionManager = executionManager;
-  }
-  
+    public void setExecutionManager(ExecutionManager executionManager) {
+        this.executionManager = executionManager;
+    }
 }

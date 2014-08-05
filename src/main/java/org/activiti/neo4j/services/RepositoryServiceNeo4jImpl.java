@@ -1,51 +1,55 @@
 package org.activiti.neo4j.services;
 
-import org.activiti.bpmn.model.*;
-import org.activiti.bpmn.model.Process;
+import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.bpmn.model.SequenceFlow;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.impl.repository.DeploymentBuilderImpl;
 import org.activiti.engine.repository.*;
 import org.activiti.engine.task.IdentityLink;
-import org.activiti.neo4j.*;
-import org.activiti.neo4j.ProcessDefinition;
+import org.activiti.neo4j.CommandExecutorNeo4j;
 import org.activiti.neo4j.cmd.ICommand;
-import org.activiti.neo4j.cmd.impl.DeployNeoCmd;
-import org.activiti.neo4j.helper.BpmnModelUtil;
-import org.activiti.neo4j.helper.BpmnParser;
 import org.activiti.validation.ValidationError;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.index.Index;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.InputStream;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.activiti.neo4j.utils.Utils.notImplemented;
 
+
 public class RepositoryServiceNeo4jImpl implements RepositoryService {
 
-    protected GraphDatabaseService graphDb;
     protected CommandExecutorNeo4j commandExecutor;
 
     protected Map<String, Node> nodeMap;
     protected Set<SequenceFlow> sequenceFlows;
 
-    public RepositoryServiceNeo4jImpl(GraphDatabaseService graphDb, CommandExecutorNeo4j commandExecutor) {
-        this.graphDb = graphDb;
-        this.commandExecutor = commandExecutor;
+    @Autowired
+    private ApplicationContext context;
+
+    private ICommand<Deployment> deployCmd;
+
+    public RepositoryServiceNeo4jImpl(CommandExecutorNeo4j ex) {
+        this.commandExecutor = ex;
     }
 
     @Override
     public Deployment deploy(DeploymentBuilder deploymentBuilder) {
-        ICommand<Deployment> deploy = new DeployNeoCmd<Deployment>(deploymentBuilder, this.graphDb);
-        return commandExecutor.execute(deploy);
+        return commandExecutor.execute(deployCmd);
     }
 
     @Override
     public DeploymentBuilder createDeployment() {
-        return new DeploymentBuilderImpl(this);
+
+        DeploymentBuilderImpl builder = new DeploymentBuilderImpl(this);
+        this.deployCmd = (ICommand<Deployment>) context.getBean("deployCmd",  new Object[]{ builder } );
+        return builder;
     }
 
     @Override
@@ -291,4 +295,5 @@ public class RepositoryServiceNeo4jImpl implements RepositoryService {
         notImplemented();
         return null;
     }
+
 }

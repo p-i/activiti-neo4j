@@ -4,19 +4,15 @@ import org.activiti.engine.RuntimeService;
 import org.activiti.engine.delegate.event.ActivitiEvent;
 import org.activiti.engine.delegate.event.ActivitiEventListener;
 import org.activiti.engine.delegate.event.ActivitiEventType;
+import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.runtime.*;
-import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Event;
 import org.activiti.engine.task.IdentityLink;
-import org.activiti.neo4j.*;
-import org.activiti.neo4j.Execution;
+import org.activiti.neo4j.CommandExecutorNeo4j;
 import org.activiti.neo4j.cmd.ICommand;
-import org.activiti.neo4j.entity.NodeBasedExecution;
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.index.Index;
+import org.activiti.neo4j.cmd.impl.StartProcessInstanceNeoCmd;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 
 import java.util.Collection;
 import java.util.List;
@@ -26,12 +22,16 @@ import static org.activiti.neo4j.utils.Utils.notImplemented;
 
 public class RuntimeServiceNeoImpl implements RuntimeService {
 
-  protected GraphDatabaseService graphDb;
+    @Autowired
+    private ApplicationContext context;
+
+    @Autowired
+    private StartProcessInstanceNeoCmd<ProcessInstance> startProcessInstanceCmd;
+
   protected CommandExecutorNeo4j commandExecutor;
 
-  public RuntimeServiceNeoImpl(GraphDatabaseService graphDb, CommandExecutorNeo4j commandExecutor) {
-    this.graphDb = graphDb;
-    this.commandExecutor = commandExecutor;
+  public RuntimeServiceNeoImpl(CommandExecutorNeo4j commandExecutor) {
+    this.commandExecutor =  commandExecutor;
   }
 
     /**
@@ -42,41 +42,7 @@ public class RuntimeServiceNeoImpl implements RuntimeService {
      */
     @Override
     public ProcessInstance startProcessInstanceByKey(final String processDefinitionKey) {
-
-        commandExecutor.execute(new ICommand<Void>() {
-
-            public Void execute(CommandContextNeo4j<Void> commandContext) {
-                // Find process definition node
-
-                // TODO: encapsulate in a manager!
-                Index<Node> processDefinitionIndex = graphDb.index().forNodes(Constants.PROCESS_DEFINITION_INDEX);
-                Node processDefinitionNode = processDefinitionIndex.get(Constants.INDEX_KEY_PROCESS_DEFINITION_KEY, processDefinitionKey).getSingle();
-                Node startEventNode = processDefinitionNode.getRelationships(Direction.OUTGOING, RelTypes.IS_STARTED_FROM).iterator().next().getEndNode();
-
-                // Create process instance node and link it to the process definition
-                Node processInstanceNode = graphDb.createNode();
-                processDefinitionNode.createRelationshipTo(processInstanceNode, RelTypes.PROCESS_INSTANCE);
-
-//        // Traverse the process definition
-//        TraversalDescription traversalDescription = Traversal.description()
-//                .breadthFirst()
-//                .relationships( RelTypes.SEQ_FLOW, Direction.OUTGOING )
-//                .evaluator(Evaluators.all());
-//        Traverser traverser = traversalDescription.traverse(startEventNode);
-
-                // Add one execution link to the startnode
-                Relationship relationShipExecution = processInstanceNode.createRelationshipTo(startEventNode, RelTypes.EXECUTION);
-
-                // Execute the process
-                Execution execution = new NodeBasedExecution(relationShipExecution);
-                commandContext.continueProcess(execution);
-
-                return null;
-            }
-
-        });
-
-        return null;
+        return commandExecutor.execute(startProcessInstanceCmd);
     }
 
     /**

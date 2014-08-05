@@ -10,18 +10,24 @@ import org.activiti.engine.repository.DeploymentBuilder;
 import org.activiti.neo4j.CommandContextNeo4j;
 import org.activiti.neo4j.Constants;
 import org.activiti.neo4j.ProcessDefinition;
-import org.activiti.neo4j.RelTypes;
 import org.activiti.neo4j.cmd.ICommand;
 import org.activiti.neo4j.helper.BpmnModelUtil;
 import org.activiti.neo4j.helper.BpmnParser;
+import org.activiti.neo4j.persistence.entity.*;
+import org.activiti.neo4j.persistence.entity.TaskRelationship;
+import org.activiti.neo4j.persistence.repository.TaskNeoRepository;
+import org.activiti.neo4j.persistence.repository.UserTaskNeoRepository;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.SetUtils;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.index.Index;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.neo4j.conversion.Result;
+import org.springframework.data.neo4j.support.Neo4jTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayInputStream;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -31,15 +37,23 @@ import java.util.Set;
  * <p>Deployment command {@link org.activiti.engine.impl.cmd.DeployCmd DeployCmd}.
  * for the Neo4j
  */
-public class DeployNeoCmd<T> extends DeployCmd implements ICommand<Deployment> {
+@Component(value="deployCmd")
+public class DeployNeoCmd<T> extends DeployCmd implements ICommand<Deployment>, Serializable {
 
-    private Map<String, Node> nodeMap;
+    private Map<String, TaskNodeNeo> nodeMap;
     private Set<SequenceFlow> sequenceFlows;
-    private final GraphDatabaseService graphDb;
 
-    public DeployNeoCmd(DeploymentBuilder deploymentBuilder, GraphDatabaseService db) {
+    @Autowired
+    private UserTaskNeoRepository userTaskNeoRepository;
+
+    @Autowired
+    private TaskNeoRepository taskNeoRepository;
+
+    @Autowired
+    private Neo4jTemplate template;
+
+    public DeployNeoCmd(DeploymentBuilder deploymentBuilder) {
         super(deploymentBuilder);
-        this.graphDb = db;
     }
 
     /**
@@ -51,6 +65,8 @@ public class DeployNeoCmd<T> extends DeployCmd implements ICommand<Deployment> {
         deployment.setDeploymentTime(commandContext.getProcessEngineConfiguration().getClock().getCurrentTime());
 
         Map<String, ResourceEntity> mapResources = deployment.getResources();
+
+        if (null == mapResources) throw new RuntimeException("No resource was found!");
 
         // get all the resources (only bpmn 2.0 XML files)
         final Set<String> keySet = SetUtils.predicatedSet(mapResources.keySet(), new Predicate() {
@@ -84,7 +100,7 @@ public class DeployNeoCmd<T> extends DeployCmd implements ICommand<Deployment> {
         BpmnModel bpmnModel = BpmnParser.parse(inputStream);
         Process process = bpmnModel.getProcesses().get(0);
 
-        nodeMap = new HashMap<String, Node>();
+        nodeMap = new HashMap<String, TaskNodeNeo>();
         sequenceFlows = new HashSet<SequenceFlow>();
         for (FlowElement flowElement : process.getFlowElements()) {
             if (flowElement instanceof StartEvent) {
@@ -103,92 +119,86 @@ public class DeployNeoCmd<T> extends DeployCmd implements ICommand<Deployment> {
                 sequenceFlows.add((SequenceFlow) flowElement);
             }
         }
+
         processSequenceFlows();
 
         // Create process definition node
-        Node processDefinitionNode = graphDb.createNode();
+        ProcessDefinitionNodeNeo processDefinitionNode = (ProcessDefinitionNodeNeo) taskNeoRepository.findBySchemaPropertyValue("id", Constants.PROCESS_DEFINITION_INDEX);
+        if (processDefinitionNode == null) {
+            processDefinitionNode = new ProcessDefinitionNodeNeo();
+            processDefinitionNode = taskNeoRepository.save(processDefinitionNode);
+        }
 
         // Create Node representation
         ProcessDefinition processDefinition = new ProcessDefinition();
         processDefinition.setId(processDefinitionNode.getId());
         processDefinition.setKey(process.getId());
 
-        // Temporary (for visualization)
-        //graphDb.getReferenceNode().createRelationshipTo(processDefinitionNode, RelTypes.PROCESS_DEFINITION);
-
         // Create relationship from process definition node to start event
         StartEvent startEvent = BpmnModelUtil.findFlowElementsOfType(process, StartEvent.class).get(0);
-        Node startEventNode = nodeMap.get(startEvent.getId());
-        processDefinitionNode.createRelationshipTo(startEventNode, RelTypes.IS_STARTED_FROM);
+        TaskNodeNeo startEventNode = taskNeoRepository.findBySchemaPropertyValue("id", startEvent.getId());
+        //TaskNodeNeo startEventNode = nodeMap.get(startEvent.getId());
+        processDefinitionNode.addStartNode(startEventNode);
+        taskNeoRepository.save(processDefinitionNode);
 
         // Add process definition to index
-        Index<Node> processDefinitionIndex = graphDb.index().forNodes(Constants.PROCESS_DEFINITION_INDEX);
-        processDefinitionIndex.putIfAbsent(processDefinitionNode, Constants.INDEX_KEY_PROCESS_DEFINITION_KEY, processDefinition.getKey());
+        //Index<Node> processDefinitionIndex = graphDb.index().forNodes(Constants.PROCESS_DEFINITION_INDEX);
+        //processDefinitionIndex.putIfAbsent(processDefinitionNode, Constants.INDEX_KEY_PROCESS_DEFINITION_KEY, processDefinition.getKey());
     }
 
 
     private void addStartEvent(StartEvent startEvent) {
-        Node startEventNode = createNode(startEvent);
-        startEventNode.setProperty("type", Constants.TYPE_START_EVENT);
+        TaskNodeNeo node = new TaskNodeNeo(startEvent.getId(), Constants.TYPE_START_EVENT);
+        taskNeoRepository.save(node);
+        nodeMap.put(node.getId(), node);
     }
 
     private void addEndEvent(EndEvent endEvent) {
-        Node endEventNode = createNode(endEvent);
-        endEventNode.setProperty("type", Constants.TYPE_END_EVENT);
+        TaskNodeNeo node = new TaskNodeNeo(endEvent.getId(), Constants.TYPE_END_EVENT);
+        taskNeoRepository.save(node);
+        nodeMap.put(node.getId(), node);
     }
 
     private void addParallelGateway(ParallelGateway parallelGateway) {
-        Node parallelGwNode = createNode(parallelGateway);
-        parallelGwNode.setProperty("type", Constants.TYPE_PARALLEL_GATEWAY);
+        TaskNodeNeo node = new TaskNodeNeo(parallelGateway.getId(), Constants.TYPE_PARALLEL_GATEWAY);
+        taskNeoRepository.save(node);
+        nodeMap.put(node.getId(), node);
     }
 
     private void addExclusiveGateway(ExclusiveGateway exclusiveGateway) {
-        Node exclusiveGwNode = createNode(exclusiveGateway);
-        exclusiveGwNode.setProperty("type", Constants.TYPE_EXCLUSIVE_GATEWAY);
-
-        if (exclusiveGateway.getDefaultFlow() != null) {
-            exclusiveGwNode.setProperty("defaultFlow", exclusiveGateway.getDefaultFlow());
-        }
+        ExclusiveGatewayNodeNeo exclusiveGatewayNode = new ExclusiveGatewayNodeNeo(exclusiveGateway);
+        taskNeoRepository.save(exclusiveGatewayNode);
+        nodeMap.put(exclusiveGatewayNode.getId(), exclusiveGatewayNode);
     }
 
     private void addUserTask(UserTask userTask) {
-        Node userTaskNode = createNode(userTask);
-        userTaskNode.setProperty("type", Constants.TYPE_USER_TASK);
-
-        if (userTask.getName() != null) {
-            userTaskNode.setProperty("name", userTask.getName());
-        }
-
-        if (userTask.getAssignee() != null) {
-            userTaskNode.setProperty("assignee", userTask.getAssignee());
-        }
+        UserTaskNodeNeo userTaskNode = new UserTaskNodeNeo(userTask);
+        userTaskNeoRepository.save(userTaskNode);
+        nodeMap.put(userTaskNode.getId(), userTaskNode);
     }
 
     private void addServiceTask(ServiceTask serviceTask) {
-        Node serviceTaskNode = createNode(serviceTask);
-        serviceTaskNode.setProperty("type", Constants.TYPE_SERVICE_TASK);
-        serviceTaskNode.setProperty("class", serviceTask.getImplementation());
-    }
-
-    private Node createNode(FlowNode flowNode) {
-        Node node = graphDb.createNode();
-        node.setProperty("id", flowNode.getId());
-
-        nodeMap.put(flowNode.getId(), node);
-
-        return node;
+        ServiceTaskNodeNeo serviceTaskNode = new ServiceTaskNodeNeo(serviceTask);
+        taskNeoRepository.save(serviceTaskNode);
+        nodeMap.put(serviceTaskNode.getId(), serviceTaskNode);
     }
 
     private void processSequenceFlows() {
         for (SequenceFlow sequenceFlow : sequenceFlows) {
-            Node sourceNode = nodeMap.get(sequenceFlow.getSourceRef());
-            Node targetNode = nodeMap.get(sequenceFlow.getTargetRef());
 
-            Relationship sequenceflowRelationship = sourceNode.createRelationshipTo(targetNode, RelTypes.SEQ_FLOW);
-            sequenceflowRelationship.setProperty("id", sequenceFlow.getId());
-            if (sequenceFlow.getConditionExpression() != null) {
-                sequenceflowRelationship.setProperty("condition", sequenceFlow.getConditionExpression());
-            }
+            TaskNodeNeo sourceNode = nodeMap.get(sequenceFlow.getSourceRef());
+            TaskNodeNeo targetNode = nodeMap.get(sequenceFlow.getTargetRef());
+/*
+            TaskRelationship relationship = new TaskRelationship();
+            relationship.setFrom(sourceNode);
+            relationship.setTo(targetNode);
+            relationship.setId(sequenceFlow.getId());
+            relationship.setCondition(sequenceFlow.getConditionExpression());
+
+            template.save(relationship);*/
+
+            System.out.println(">> make relationshit between " + sourceNode + " and " + targetNode);
+            TaskRelationship role = template.createRelationshipBetween(sourceNode, targetNode, TaskRelationship.class, "ACTS_IN", false);
         }
     }
 }

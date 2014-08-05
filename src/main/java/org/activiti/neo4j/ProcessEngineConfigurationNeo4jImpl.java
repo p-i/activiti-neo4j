@@ -13,7 +13,6 @@
 package org.activiti.neo4j;
 
 import org.activiti.engine.*;
-import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.impl.context.Context;
 import org.activiti.engine.impl.interceptor.CommandInterceptor;
 import org.activiti.engine.impl.util.DefaultClockImpl;
@@ -28,46 +27,48 @@ import org.activiti.neo4j.services.TaskServiceNeoImpl;
 import org.activiti.spring.SpringProcessEngineConfiguration;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
 
 
 /**
  * @author Joram Barrez
  */
+@Configurable
+@Component
 public class ProcessEngineConfigurationNeo4jImpl extends SpringProcessEngineConfiguration implements IProcessEngineConfiguration {
 
     protected GraphDatabaseService graphDatabaseService;
     protected BehaviorMapping behaviorMapping;
-    protected Core core;
-    protected CommandExecutorNeo4j commandExecutor;
     protected ExecutionManager executionManager;
     protected TaskManager taskManager;
+    protected CommandExecutorNeo4j commandExecutor;
+    protected Core core;
 
     protected RepositoryService repositoryService;
     protected RuntimeService runtimeService;
+    protected TaskService taskService;
     protected HistoryService historyService;
     protected IdentityService identityService;
-    protected TaskService taskService;
     protected FormService formService;
     protected ManagementService managementService;
 
+    @Bean
     @Override
     public ProcessEngine buildProcessEngine() {
 
-        if (this.graphDatabaseService == null) {
-            this.graphDatabaseService = new GraphDatabaseFactory().newEmbeddedDatabase("target/testDB");
-        }
-
         initBehaviorMapping();
         initCore();
-        initManagers();
+        //initManagers();
         initCommandExecutor();
         initServices();
 
-        ProcessEngineNeo4jImpl processEngine = new ProcessEngineNeo4jImpl(this);
-        processEngine.setGraphDatabaseService(graphDatabaseService);
-        processEngine.setCommandExecutor(commandExecutor);
-
+        ProcessEngine processEngine = new ProcessEngineNeo4jImpl(this);
+        //processEngine.setGraphDatabaseService(graphDatabaseService);
+        ProcessEngines.setInitialized(true);
         Context.setProcessEngineConfiguration(this);
+        super.autoDeployResources(processEngine);
 
         super.setClock(new DefaultClockImpl());
 
@@ -92,64 +93,65 @@ public class ProcessEngineConfigurationNeo4jImpl extends SpringProcessEngineConf
     }
 
     protected void initCommandExecutor() {
-        CommandExecutorNeo4j commandExecutor = new CommandExecutorNeo4j(graphDatabaseService, this);
+        CommandExecutorNeo4j commandExecutor = new CommandExecutorNeo4j();
         commandExecutor.setCore(core);
+        commandExecutor.setProcessEngineConfiguration(this);
         commandExecutor.setExecutionManager(executionManager);
         this.commandExecutor = commandExecutor;
     }
 
     protected void initServices() {
-        this.repositoryService = new RepositoryServiceNeo4jImpl(graphDatabaseService, commandExecutor);
-        this.runtimeService = new RuntimeServiceNeoImpl(graphDatabaseService, commandExecutor);
+        this.repositoryService = new RepositoryServiceNeo4jImpl(commandExecutor);
+        this.runtimeService = new RuntimeServiceNeoImpl(commandExecutor);
         this.taskService = new TaskServiceNeoImpl(commandExecutor);
     }
 
-    public GraphDatabaseService getGraphDatabaseService() {
-        return graphDatabaseService;
-    }
-
-    public void setGraphDatabaseService(GraphDatabaseService graphDatabaseService) {
-        this.graphDatabaseService = graphDatabaseService;
-    }
-
-
+    @Bean
     @Override
     public RepositoryService getRepositoryService() {
         return this.repositoryService;
     }
 
+    @Bean
     @Override
     public RuntimeService getRuntimeService() {
         return this.runtimeService;
     }
 
+    @Bean
     @Override
     public FormService getFormService() {
         return this.formService;
     }
 
+    @Bean
     @Override
     public TaskService getTaskService() {
         return this.taskService;
     }
 
+    @Bean
     @Override
     public HistoryService getHistoryService() {
         return this.historyService;
     }
 
+    @Bean
     @Override
     public IdentityService getIdentityService() {
         return this.identityService;
     }
 
+    @Bean
     @Override
     public ManagementService getManagementService() {
         return this.managementService;
     }
 
+    @Bean
     @Override
     protected CommandInterceptor createTransactionInterceptor() {
         return null;
     }
+
 }

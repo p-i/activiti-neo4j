@@ -16,9 +16,11 @@ import java.util.List;
 
 
 /**
+ * Represents one execution of a  {@link org.activiti.engine.repository.ProcessDefinition}.
+ *
  * @author Joram Barrez
  */
-public interface ProcessInstance {
+public interface ProcessInstance extends Execution {
   
   void setVariable(String variableName, Object variableValue);
 

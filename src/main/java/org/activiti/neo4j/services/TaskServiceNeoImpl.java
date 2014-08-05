@@ -2,13 +2,13 @@ package org.activiti.neo4j.services;
 
 import org.activiti.engine.TaskService;
 import org.activiti.engine.impl.ServiceImpl;
+import org.activiti.engine.impl.interceptor.CommandExecutor;
 import org.activiti.engine.task.*;
-import org.activiti.neo4j.cmd.ICommand;
 import org.activiti.neo4j.CommandContextNeo4j;
 import org.activiti.neo4j.CommandExecutorNeo4j;
-
-import org.activiti.neo4j.manager.TaskManager;
-import org.activiti.neo4j.query.TaskQueryNeoImpl;
+import org.activiti.neo4j.cmd.ICommand;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 
 import java.io.InputStream;
 import java.util.*;
@@ -17,11 +17,20 @@ import static org.activiti.neo4j.utils.Utils.notImplemented;
 
 public class TaskServiceNeoImpl extends ServiceImpl implements TaskService {
 
+    @Autowired
+    private ApplicationContext context;
+
     // TODO: can be put in a command service super class
     protected CommandExecutorNeo4j commandExecutor;
 
     public TaskServiceNeoImpl(CommandExecutorNeo4j commandExecutor) {
         this.commandExecutor = commandExecutor;
+    }
+
+    @Override
+    public TaskQuery createTaskQuery() {
+        return (TaskQuery) context.getBean("taskQuery");
+        //return new TaskQueryNeoImpl();
     }
 
     @Override
@@ -182,11 +191,6 @@ public class TaskServiceNeoImpl extends ServiceImpl implements TaskService {
     @Override
     public void setDueDate(String taskId, Date dueDate) {
         notImplemented();
-    }
-
-    @Override
-    public TaskQuery createTaskQuery() {
-        return new TaskQueryNeoImpl(commandExecutor.getGraphDatabaseService());
     }
 
     @Override

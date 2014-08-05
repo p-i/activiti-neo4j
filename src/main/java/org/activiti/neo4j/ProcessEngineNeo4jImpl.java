@@ -2,20 +2,16 @@ package org.activiti.neo4j;
 
 import org.activiti.engine.*;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.FormService;
-import org.activiti.engine.TaskService;
-import org.activiti.engine.HistoryService;
-import org.activiti.engine.IdentityService;
-import org.activiti.engine.ManagementService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 public class ProcessEngineNeo4jImpl implements ProcessEngine {
 
     protected GraphDatabaseService graphDatabaseService;
 
+    @Autowired
     protected RepositoryService repositoryService;
+
     protected RuntimeService runtimeService;
     protected TaskService taskService;
 
@@ -48,7 +44,7 @@ public class ProcessEngineNeo4jImpl implements ProcessEngine {
 
     @Override
     public void close() {
-
+        graphDatabaseService.shutdown();
     }
 
     @Override

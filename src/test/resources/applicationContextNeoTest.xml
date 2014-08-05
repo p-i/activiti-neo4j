@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:neo4j="http://www.springframework.org/schema/data/neo4j"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="
+http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context.xsd
+http://www.springframework.org/schema/data/neo4j
+http://www.springframework.org/schema/data/neo4j/spring-neo4j.xsd
+http://www.springframework.org/schema/tx
+http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+
+    <!-- Spring Data Neo4j -->
+    <neo4j:config storeDirectory="target/neo4j-db-plain"
+                  base-package="org.activiti.neo4j.persistence.entity" />
+    <neo4j:repositories base-package="org.activiti.neo4j.persistence.repository" />
+
+    <tx:annotation-driven mode="aspectj" />
+
+    <context:component-scan base-package="org.activiti.neo4j"/>
+    <context:spring-configured/>
+    <context:annotation-config/>
+
+
+    <!-- Validator bean -->
+    <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+        <property name="providerClass" value="org.apache.bval.jsr303.ApacheValidationProvider" />
+    </bean>
+
+    <bean id="processEngineConfiguration" class="org.activiti.neo4j.ProcessEngineConfigurationNeo4jImpl">
+        <property name="databaseType" value="neo4j" />
+        <property name="databaseSchemaUpdate" value="true" />
+        <property name="jobExecutorActivate" value="false" />
+        <property name="deploymentResources" value="classpath*:/tests.bpmn" />
+    </bean>
+
+    <bean id="processEngine" class="org.activiti.spring.ProcessEngineFactoryBean">
+        <property name="processEngineConfiguration" ref="processEngineConfiguration" />
+    </bean>
+
+    <bean id="runtimeService" factory-bean="processEngine"
+          factory-method="getRuntimeService" />
+    <bean id="repositoryService" factory-bean="processEngine"
+          factory-method="getRepositoryService" />
+    <bean id="taskService" factory-bean="processEngine"
+          factory-method="getTaskService" />
+    <bean id="historyService" factory-bean="processEngine"
+          factory-method="getHistoryService" />
+    <bean id="managementService" factory-bean="processEngine"
+          factory-method="getManagementService" />
+
+    <bean id="taskQuery" class="org.activiti.neo4j.query.TaskQueryNeoImpl" />
+
+    <bean id="deployCmd" class="org.activiti.neo4j.cmd.CommandFactory" scope="prototype" factory-method="createCommandBean" >
+        <!-- Default value -->
+        <constructor-arg value="null" />
+    </bean>
+
+    <bean id="startProcessInstanceCmd" class="org.activiti.neo4j.cmd.impl.StartProcessInstanceNeoCmd" />
+
+</beans>
