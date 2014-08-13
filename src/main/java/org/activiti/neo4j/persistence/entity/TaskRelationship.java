@@ -4,10 +4,13 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.data.neo4j.annotation.*;
 
+import java.util.UUID;
+
+
 /**
  * Created by ilja on 31/07/14.
  */
-@RelationshipEntity(type = "BELONGS_TO")
+@RelationshipEntity
 public class TaskRelationship {
 
     @GraphId
@@ -25,6 +28,16 @@ public class TaskRelationship {
 
     // cached hashcode
     transient private Integer hash;
+
+    public TaskRelationship() {
+        this.id = UUID.randomUUID().toString();
+    }
+
+    public TaskRelationship(TaskNodeNeo from, TaskNodeNeo to) {
+        this();
+        this.from = from;
+        this.to = to;
+    }
 
     private String condition;
 

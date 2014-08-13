@@ -12,86 +12,117 @@
  */
 package org.activiti.neo4j.entity;
 
+import org.activiti.neo4j.Activity;
+import org.activiti.neo4j.Constants;
+import org.activiti.neo4j.Execution;
+import org.activiti.neo4j.ProcessInstance;
+import org.activiti.neo4j.persistence.entity.TaskNodeNeo;
+import org.activiti.neo4j.persistence.entity.TaskRelationship;
+import org.activiti.neo4j.persistence.repository.TaskNeoRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.neo4j.support.Neo4jTemplate;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.activiti.neo4j.Activity;
-import org.activiti.neo4j.Execution;
-import org.activiti.neo4j.ProcessInstance;
-import org.activiti.neo4j.RelTypes;
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
 import static org.activiti.neo4j.utils.Utils.notImplemented;
 
 /**
  * @author Joram Barrez
  */
 public class NodeBasedProcessInstance implements ProcessInstance {
-  
-  protected Node processInstanceNode;
-  
-  public NodeBasedProcessInstance(Node processInstanceNode) {
-    this.processInstanceNode = processInstanceNode;
-  }
 
-  public void setVariable(String variableName, Object variableValue) {
-    Node variableNode = getVariableNode();
-    if (variableNode == null) {
-      variableNode = processInstanceNode.getGraphDatabase().createNode();
-      processInstanceNode.createRelationshipTo(variableNode, RelTypes.VARIABLE);
-    }
-    
-    variableNode.setProperty(variableName, variableValue);
-  }
+    protected TaskNodeNeo processInstance;
 
-  protected Node getVariableNode() {
-    Iterator<Relationship> variableRelationShipIterator = 
-            processInstanceNode.getRelationships(Direction.OUTGOING, RelTypes.VARIABLE).iterator();
-    
-    Node variableNode = null;
-    if (variableRelationShipIterator.hasNext()) {
-      Relationship variableRelationship = variableRelationShipIterator.next();
-      variableNode = variableRelationship.getEndNode();
-    }
-    
-    return variableNode;
-  }
-  
-  public Execution createNewExecutionInActivity(Activity activity) {
-    Relationship executionRelationship = processInstanceNode
-            .createRelationshipTo(((NodeBasedActivity) activity).getActivityNode(), RelTypes.EXECUTION);
-    return new NodeBasedExecution(executionRelationship);
-  }
-  
-  public void delete() {
-    // Executions
-    for (Execution execution : getExecutions()) {
-      execution.delete();
-    }
-    
-    // Variables
-    Node variableNode = getVariableNode();
-    if (variableNode != null) {
-      variableNode.delete();
-    }
-    
-    // Delete relationship from process definition to process instance
-    for (Relationship relationship : processInstanceNode.getRelationships(RelTypes.PROCESS_INSTANCE)) {
-      relationship.delete();
-    }
-    
-    processInstanceNode.delete();
-  }
+    @Autowired
+    private TaskNeoRepository taskNeoRepository;
 
-  public List<Execution> getExecutions() {
-    List<Execution> executions = new ArrayList<Execution>();
-    for (Relationship executionRelationship : processInstanceNode.getRelationships(Direction.OUTGOING, RelTypes.EXECUTION)) {
-      executions.add(new NodeBasedExecution(executionRelationship));
+    @Autowired
+    private Neo4jTemplate template;
+
+    public NodeBasedProcessInstance() {
+
     }
-    return executions;
-  }
+
+    /*
+    public NodeBasedProcessInstance(Node processInstance) {
+        this.processInstance = processInstance;
+    }
+    */
+
+    public void setVariable(String variableName, Object variableValue) {
+        TaskNodeNeo variableNode = getVariableNode();
+        if (variableNode == null) {
+            //variableNode = processInstance.getGraphDatabase().createNode();
+            //processInstance.createRelationshipTo(variableNode, RelTypes.VARIABLE);
+
+            variableNode = new TaskNodeNeo(Constants.TYPE_VARIABLE);
+            template.createRelationshipBetween(
+                    processInstance,
+                    variableNode,
+                    TaskRelationship.class,
+                    Constants.REL_TYPE_VARIABLE, false);
+        }
+
+        // TODO: fix it
+        //variableNode.setProperty(variableName, variableValue);
+    }
+
+    protected TaskNodeNeo getVariableNode() {
+        // Iterator<Relationship> variableRelationShipIterator =  processInstance.getRelationships(Direction.OUTGOING, RelTypes.VARIABLE).iterator();
+        Iterator<TaskRelationship> variableRelationShipIterator = processInstance.getOutgoingVariableRelationships().iterator();
+
+        TaskNodeNeo variableNode = null;
+        if (variableRelationShipIterator.hasNext()) {
+            TaskRelationship variableRelationship = variableRelationShipIterator.next();
+            variableNode = variableRelationship.getTo();
+        }
+
+        return variableNode;
+    }
+
+    public Execution createNewExecutionInActivity(Activity activity) {
+        TaskRelationship executionRelationship = template.createRelationshipBetween(
+                processInstance,
+                activity.getNode(),
+                TaskRelationship.class,
+                Constants.REL_TYPE_EXECUTION,
+                false);
+
+        NodeBasedExecution nodeBasedExecution = new NodeBasedExecution();
+        nodeBasedExecution.setRelationshipExecution(executionRelationship);
+        return nodeBasedExecution;
+    }
+
+    public void delete() {
+        // Executions
+        for (Execution execution : getExecutions()) {
+            execution.delete();
+        }
+
+        // Variables
+        TaskNodeNeo variableNode = getVariableNode();
+        if (variableNode != null) {
+            template.delete(variableNode);
+        }
+
+        // Delete relationship from process definition to process instance
+        for (TaskRelationship relationship : processInstance.getRelationShipsByType(Constants.REL_TYPE_PROCESS_INSTANCE)) {
+            template.delete(relationship);
+        }
+
+        template.delete(processInstance);
+    }
+
+    public List<Execution> getExecutions() {
+        List<Execution> executions = new ArrayList<Execution>();
+        // TODO: return only outgoing relationships
+        for (TaskRelationship executionRelationship : processInstance.getRelationShipsByType(Constants.REL_TYPE_EXECUTION)) {
+            executions.add(new NodeBasedExecution(executionRelationship));
+        }
+        return executions;
+    }
 
 
     @Override
@@ -113,7 +144,7 @@ public class NodeBasedProcessInstance implements ProcessInstance {
     }
 
     @Override
-    public void addToIndex(String namespace, String key, Object value) {
+    public void setRelationshipExecution(TaskRelationship executionRelationship) {
         notImplemented();
     }
 
@@ -139,4 +170,10 @@ public class NodeBasedProcessInstance implements ProcessInstance {
         notImplemented();
         return null;
     }
+
+    @Override
+    public void setProcessInstance(TaskNodeNeo processInstanceNode) {
+        this.processInstance = processInstanceNode;
+    }
+
 }

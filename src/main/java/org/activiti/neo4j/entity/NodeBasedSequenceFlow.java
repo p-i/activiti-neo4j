@@ -14,51 +14,61 @@ package org.activiti.neo4j.entity;
 
 import org.activiti.neo4j.Activity;
 import org.activiti.neo4j.SequenceFlow;
-import org.neo4j.graphdb.Relationship;
+import org.activiti.neo4j.persistence.entity.TaskRelationship;
+import org.activiti.neo4j.utils.Utils;
 
 
 /**
  * @author Joram Barrez
  */
 public class NodeBasedSequenceFlow implements SequenceFlow {
-  
-  protected Relationship sequenceFlowRelationship;
-  
-  protected Activity sourceActivity;
-  protected Activity targetActivity;
-  
-  public NodeBasedSequenceFlow(Relationship sequenceFlowRelationship) {
-    this.sequenceFlowRelationship = sequenceFlowRelationship;
-  }
-  
-  public Activity getSourceActivity() {
-    if (sourceActivity == null) {
-      sourceActivity = new NodeBasedActivity(sequenceFlowRelationship.getStartNode());
+
+    protected TaskRelationship sequenceFlowRelationship;
+
+    protected Activity sourceActivity;
+    protected Activity targetActivity;
+
+    public NodeBasedSequenceFlow(TaskRelationship sequenceFlowRelationship) {
+        this.sequenceFlowRelationship = sequenceFlowRelationship;
     }
-    return sourceActivity;
-  }
-  
-  public Activity getTargetActivity() {
-    if (targetActivity == null) {
-      targetActivity = new NodeBasedActivity(sequenceFlowRelationship.getEndNode());
+
+    public Activity getSourceActivity() {
+        if (sourceActivity == null) {
+            sourceActivity = new NodeBasedActivity(sequenceFlowRelationship.getFrom());
+        }
+        return sourceActivity;
     }
-    return targetActivity;
-  }
 
-  public boolean hasProperty(String property) {
-    return sequenceFlowRelationship.hasProperty(property);
-  }
+    public Activity getTargetActivity() {
+        if (targetActivity == null) {
+            targetActivity = new NodeBasedActivity(sequenceFlowRelationship.getTo());
+        }
+        return targetActivity;
+    }
 
-  public Object getProperty(String property) {
-    return sequenceFlowRelationship.getProperty(property);
-  }
 
-  public void setProperty(String property, Object value) {
-    sequenceFlowRelationship.setProperty(property, value);
-  }
-  
-  public Object removeProperty(String property) {
-    return sequenceFlowRelationship.removeProperty(property);
-  }
+    public boolean hasProperty(String property) {
+        //return sequenceFlowRelationship.hasProperty(property);
+        Utils.notImplemented();
+        return true;
+    }
+
+    public Object getProperty(String property) {
+        //return sequenceFlowRelationship.getProperty(property);
+        Utils.notImplemented();
+        return null;
+    }
+
+    public void setProperty(String property, Object value) {
+        //sequenceFlowRelationship.setProperty(property, value);
+        Utils.notImplemented();
+    }
+
+    public Object removeProperty(String property) {
+        // return sequenceFlowRelationship.removeProperty(property);
+        Utils.notImplemented();
+        return null;
+    }
+
 
 }

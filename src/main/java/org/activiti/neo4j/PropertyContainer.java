@@ -22,5 +22,4 @@ public interface PropertyContainer {
   Object getProperty(String property);
   void setProperty(String property, Object value);
   Object removeProperty(String property);
-
 }

@@ -12,6 +12,9 @@
  */
 package org.activiti.neo4j;
 
+import org.activiti.neo4j.persistence.entity.TaskNodeNeo;
+import org.activiti.neo4j.persistence.entity.TaskRelationship;
+
 import java.util.List;
 
 
@@ -29,5 +32,6 @@ public interface ProcessInstance extends Execution {
   List<Execution> getExecutions();
   
   void delete();
-  
+
+  void setProcessInstance(TaskNodeNeo processInstanceNode);
 }

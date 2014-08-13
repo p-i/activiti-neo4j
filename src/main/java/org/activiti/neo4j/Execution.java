@@ -13,21 +13,24 @@
 package org.activiti.neo4j;
 
 
+import org.activiti.neo4j.persistence.entity.TaskRelationship;
+
 /**
  * @author Joram Barrez
  */
 public interface Execution extends PropertyContainer {
-  
-  void delete();
-  
-  ProcessInstance getProcessInstance();
-  
-  Activity getActivity();
-  
-  void setVariable(String name, Object value);
-  
-  Object getVariable(String name);
-  
-  void addToIndex(String namespace, String key, Object value);
 
+    void delete();
+
+    ProcessInstance getProcessInstance();
+
+    Activity getActivity();
+
+    void setVariable(String name, Object value);
+
+    Object getVariable(String name);
+
+    //void addToIndex(String namespace, String key, Object value);
+
+    void setRelationshipExecution(TaskRelationship executionRelationship);
 }

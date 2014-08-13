@@ -63,4 +63,7 @@ http://www.springframework.org/schema/tx/spring-tx.xsd">
 
     <bean id="startProcessInstanceCmd" class="org.activiti.neo4j.cmd.impl.StartProcessInstanceNeoCmd" />
 
+    <bean id="nodeBasedExecution" class="org.activiti.neo4j.entity.NodeBasedExecution" />
+    <bean id="processInstance" class="org.activiti.neo4j.entity.NodeBasedProcessInstance" />
+
 </beans>

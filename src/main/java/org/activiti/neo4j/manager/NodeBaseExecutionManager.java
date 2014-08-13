@@ -14,7 +14,10 @@ package org.activiti.neo4j.manager;
 
 import org.activiti.neo4j.Execution;
 import org.activiti.neo4j.entity.NodeBasedExecution;
+import org.activiti.neo4j.persistence.repository.TaskNeoRepository;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.neo4j.support.Neo4jTemplate;
 
 
 /**
@@ -23,9 +26,16 @@ import org.neo4j.graphdb.GraphDatabaseService;
 public class NodeBaseExecutionManager implements ExecutionManager {
   
   protected GraphDatabaseService graphDb;
-  
-  public Execution getExecutionById(long id) {
-    return new NodeBasedExecution(graphDb.getRelationshipById(id));
+
+    @Autowired
+    private TaskNeoRepository taskNeoRepository;
+
+    @Autowired
+    private Neo4jTemplate template;
+
+  public Execution getExecutionById(String id) {
+    // return new NodeBasedExecution(graphDb.getRelationshipById(id));
+    return new NodeBasedExecution();
   }
 
   public GraphDatabaseService getGraphDb() {

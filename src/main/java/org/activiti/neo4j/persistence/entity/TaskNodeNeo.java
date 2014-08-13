@@ -1,11 +1,19 @@
 package org.activiti.neo4j.persistence.entity;
 
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
+import org.activiti.neo4j.Constants;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.GraphId;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
+import org.springframework.data.neo4j.annotation.RelatedToVia;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 
 /**
  * <p>Task node playing role as an entity, i.e. it should be persisted in a Neo4j store.</p>
@@ -25,6 +33,20 @@ public class TaskNodeNeo extends TaskEntity {
     private String type;
 
     private String name;
+
+    @RelatedToVia(type = Constants.REL_TYPE_SEQ_FLOW, direction = Direction.INCOMING)
+    private Set<TaskRelationship> incomingRelationships;
+
+    @RelatedToVia(type = Constants.REL_TYPE_SEQ_FLOW, direction = Direction.OUTGOING)
+    private Set<TaskRelationship> outgoingRelationships;
+
+    @RelatedToVia(type = Constants.REL_TYPE_VARIABLE, direction = Direction.INCOMING)
+    private Set<TaskRelationship> incomingVariableRelationships;
+
+    @RelatedToVia(type = Constants.REL_TYPE_VARIABLE, direction = Direction.OUTGOING)
+    private Set<TaskRelationship> outgoingVariableRelationships;
+
+    private Map<String, String> mapVariables;
 
     // cached hashcode
     transient private Integer hash;
@@ -97,4 +119,60 @@ public class TaskNodeNeo extends TaskEntity {
     public Long getGeneratedId() {
         return _generatedId;
     }
+
+    public void setIncomingRelationships(Set<TaskRelationship> incomingRelationships) {
+        this.incomingRelationships = incomingRelationships;
+    }
+
+    public Set<TaskRelationship> getIncomingRelationships() {
+        return incomingRelationships;
+    }
+
+
+    public Set<TaskRelationship> getOutgoingRelationships() {
+        return outgoingRelationships;
+    }
+
+    public void setOutgoingRelationships(Set<TaskRelationship> outgoingRelationships) {
+        this.outgoingRelationships = outgoingRelationships;
+    }
+
+    public Set<TaskRelationship> getIncomingVariableRelationships() {
+        return incomingVariableRelationships;
+    }
+
+    public void setIncomingVariableRelationships(Set<TaskRelationship> incomingVariableRelationships) {
+        this.incomingVariableRelationships = incomingVariableRelationships;
+    }
+
+    public Set<TaskRelationship> getOutgoingVariableRelationships() {
+        return outgoingVariableRelationships;
+    }
+
+    public void setOutgoingVariableRelationships(Set<TaskRelationship> outgoingVariableRelationships) {
+        this.outgoingVariableRelationships = outgoingVariableRelationships;
+    }
+
+    public Map<String, String> getMapVariables() {
+        return mapVariables;
+    }
+
+    public Set<TaskRelationship> getRelationShipsByType(String type) {
+        switch (type) {
+
+            case Constants.REL_TYPE_VARIABLE:
+                Set<TaskRelationship> results = getIncomingVariableRelationships();
+                results.addAll(getOutgoingVariableRelationships());
+                return results;
+
+            case Constants.REL_TYPE_SEQ_FLOW:
+                Set<TaskRelationship> resultRelationships = getIncomingRelationships();
+                resultRelationships.addAll(getOutgoingRelationships());
+                return resultRelationships;
+
+            default: return new HashSet<>();
+
+        }
+    }
+
 }

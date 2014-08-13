@@ -12,6 +12,8 @@
  */
 package org.activiti.neo4j;
 
+import org.activiti.neo4j.persistence.entity.TaskNodeNeo;
+
 import java.util.List;
 
 
@@ -25,5 +27,8 @@ public interface Activity extends PropertyContainer {
   
   List<SequenceFlow> getIncomingSequenceFlow();
   List<SequenceFlow> getOutgoingSequenceFlow();
-  
+
+  void setActivityNode(TaskNodeNeo activityNode);
+
+    TaskNodeNeo getNode();
 }

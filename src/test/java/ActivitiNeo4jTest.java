@@ -30,9 +30,6 @@ public class ActivitiNeo4jTest {
     @Autowired
     private RuntimeService runtimeService;
 
-    @Autowired
-    private Neo4jTemplate template;
-
     @Rollback(false)
     @Before
     public void cleanUpGraph() {
@@ -50,11 +47,11 @@ public class ActivitiNeo4jTest {
                 .addClasspathResource("one-task-process.bpmn20.xml")
                 .deploy();
 
-        if (true) return;
 
         // Start process instance
         processEngine.getRuntimeService().startProcessInstanceByKey("oneTaskProcess");
 
+        if (true) return;
 
         // See if there is a task for kermit
         List<Task> tasks = processEngine.getTaskService()

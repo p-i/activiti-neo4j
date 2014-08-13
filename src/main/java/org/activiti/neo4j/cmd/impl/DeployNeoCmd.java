@@ -138,7 +138,8 @@ public class DeployNeoCmd<T> extends DeployCmd implements ICommand<Deployment>, 
         StartEvent startEvent = BpmnModelUtil.findFlowElementsOfType(process, StartEvent.class).get(0);
         TaskNodeNeo startEventNode = taskNeoRepository.findBySchemaPropertyValue("id", startEvent.getId());
         //TaskNodeNeo startEventNode = nodeMap.get(startEvent.getId());
-        processDefinitionNode.addStartNode(startEventNode);
+
+        processDefinitionNode.setStartNode(startEventNode);
         taskNeoRepository.save(processDefinitionNode);
 
         // Add process definition to index

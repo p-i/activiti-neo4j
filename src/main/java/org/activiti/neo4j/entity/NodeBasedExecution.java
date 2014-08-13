@@ -12,63 +12,66 @@
  */
 package org.activiti.neo4j.entity;
 
-import java.util.Iterator;
-
 import org.activiti.neo4j.Activity;
 import org.activiti.neo4j.Execution;
 import org.activiti.neo4j.ProcessInstance;
 import org.activiti.neo4j.RelTypes;
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.index.Index;
+import org.activiti.neo4j.persistence.entity.TaskNodeNeo;
+import org.activiti.neo4j.persistence.entity.TaskRelationship;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.neo4j.support.Neo4jTemplate;
 
 /**
  * @author Joram Barrez
  */
 public class NodeBasedExecution implements Execution {
 
-  // An execution is actually a thin wrapper around a Neo4j relationship
-  // adding al sorts of convenience methods that hide the internal bits
-  protected Relationship relationship;
-  
-  protected NodeBasedProcessInstance processInstance;
-  protected NodeBasedActivity activity;
+    // An execution is actually a thin wrapper around a Neo4j relationship
+    // adding al sorts of convenience methods that hide the internal bits
+    protected TaskRelationship relationship;
 
-  public NodeBasedExecution(Relationship relationship) {
-    this.relationship = relationship;
-  }
+    @Autowired
+    protected NodeBasedProcessInstance processInstance;
 
-  public ProcessInstance getProcessInstance() {
-    if (processInstance == null) {
-      processInstance = new NodeBasedProcessInstance(getProcessInstanceNode());
+    protected NodeBasedActivity activity;
+
+    @Autowired
+    private Neo4jTemplate template;
+
+    public NodeBasedExecution() {
+
+
     }
-    return processInstance;
-  }
-  
-  protected Node getProcessInstanceNode() {
-     return relationship.getStartNode();
-  }
-  
-  public Activity getActivity() {
-    if (activity == null) {
-      activity = new NodeBasedActivity(relationship.getEndNode());
+
+    public NodeBasedExecution(TaskRelationship relationship) {
+        this.setRelationshipExecution(relationship);
     }
-    return activity;
-  }
 
-  public void setVariable(String variableName, Object variableValue) {
+    public ProcessInstance getProcessInstance() {
+        this.processInstance.setProcessInstance(this.relationship.getTo());
+        return this.processInstance;
+    }
 
-    // TODO: need to have variable local, which is a bit trickier,
-    // since executions are relationships.
-    // Perhaps this needs to be revised
-    
-    Node processInstanceNode = getProcessInstanceNode();
+    public Activity getActivity() {
+        if (activity == null) {
+            activity = new NodeBasedActivity(this.relationship.getTo());
+        }
+        return this.activity;
+    }
 
-    // Check if the variable node already exists
-    Iterator<Relationship> variableRelationShipIterator = 
-            processInstanceNode.getRelationships(Direction.OUTGOING, RelTypes.VARIABLE).iterator();
-    
+    public void setVariable(String variableName, Object variableValue) {
+
+        // TODO: need to have variable local, which is a bit trickier,
+        // since executions are relationships.
+        // Perhaps this needs to be revised
+
+        //Node processInstanceNode = getProcessInstanceNode();
+
+        // Check if the variable node already exists
+    /*Iterator<Relationship> variableRelationShipIterator = processInstanceNode.getRelationships(Direction.OUTGOING, RelTypes.VARIABLE).iterator();
+
+
+
     Node variableNode = null;
     if (variableRelationShipIterator.hasNext()) {
       Relationship variableRelationship = variableRelationShipIterator.next();
@@ -79,11 +82,14 @@ public class NodeBasedExecution implements Execution {
     }
     
     variableNode.setProperty(variableName, variableValue);
-  }
+*/
+        TaskNodeNeo endNode = relationship.getTo();
+        // TODO: save variable to the node
+    }
 
-  public Object getVariable(String variableName) {
-    
-    Node processInstanceNode = getProcessInstanceNode();
+    public Object getVariable(String variableName) {
+        // TODO: implement me
+    /*Node processInstanceNode = getProcessInstanceNode();
     Iterator<Relationship> variableRelationshipIterator = processInstanceNode.getRelationships(RelTypes.VARIABLE).iterator();
     
     if (variableRelationshipIterator.hasNext()) {
@@ -92,45 +98,38 @@ public class NodeBasedExecution implements Execution {
     } else {
       // No variable associated with this process instance
       return null;
-    }
-  }
-  
-  public void addToIndex(String namespace, String key, Object value) {
-    Index<Relationship> index = relationship.getGraphDatabase().index().forRelationships(namespace);
-    index.add(relationship, key, value);
-  }
-  
-  public Object getProperty(String property) {
-    return relationship.getProperty(property);
-  }
-  
-  public boolean hasProperty(String property) {
-    return relationship.hasProperty(property);
-  }
-  
-  public void setProperty(String property, Object value) {
-    relationship.setProperty(property, value);
-  }
-  
-  public Node getStartNode() {
-    return relationship.getStartNode();
-  }
-  
-  public Node getEndNode() {
-    return relationship.getEndNode();
-  }
-  
-  public void delete() {
-    // Delete actual execution relationship
-    relationship.delete();
-  }
-  
-  public Object removeProperty(String property) {
-    return relationship.removeProperty(property);
-  }
-  
-  public Relationship getRelationship() {
-    return relationship;
-  }
+    }*/
 
+        return null;
+    }
+
+    public Object getProperty(String property) {
+        // return relationship.getProperty(property);
+        return null;
+    }
+
+    public boolean hasProperty(String property) {
+        // return relationship.hasProperty(property);
+        return true;
+    }
+
+    public void setProperty(String property, Object value) {
+        //relationship.setProperty(property, value);
+    }
+
+
+    public void delete() {
+        // Delete actual execution relationship
+        template.delete(relationship);
+    }
+
+    public Object removeProperty(String property) {
+        //return relationship.removeProperty(property);
+        return null;
+    }
+
+    @Override
+    public void setRelationshipExecution(TaskRelationship executionRelationship) {
+        this.relationship = executionRelationship;
+    }
 }

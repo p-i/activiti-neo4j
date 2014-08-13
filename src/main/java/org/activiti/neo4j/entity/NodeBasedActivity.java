@@ -12,76 +12,92 @@
  */
 package org.activiti.neo4j.entity;
 
+import org.activiti.neo4j.Activity;
+import org.activiti.neo4j.SequenceFlow;
+import org.activiti.neo4j.persistence.entity.TaskNodeNeo;
+import org.activiti.neo4j.persistence.entity.TaskRelationship;
+import org.apache.commons.beanutils.BeanMap;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-import org.activiti.neo4j.Activity;
-import org.activiti.neo4j.RelTypes;
-import org.activiti.neo4j.SequenceFlow;
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
+import static org.activiti.neo4j.utils.Utils.notImplemented;
 
 
 /**
  * @author Joram Barrez
  */
 public class NodeBasedActivity implements Activity {
-  
-  protected Node activityNode;
-  protected List<SequenceFlow> incomingSequenceFlows;
-  protected List<SequenceFlow> outgoingSequenceFlows;
-  
-  public NodeBasedActivity(Node activityNode) {
-    this.activityNode = activityNode;
-  }
-  
-  public List<SequenceFlow> getOutgoingSequenceFlow() {
-    if (outgoingSequenceFlows == null) {
-      outgoingSequenceFlows = new ArrayList<SequenceFlow>();
-      for (Relationship sequenceFlowRelationship : activityNode.getRelationships(Direction.OUTGOING, RelTypes.SEQ_FLOW)) {
-        outgoingSequenceFlows.add(new NodeBasedSequenceFlow(sequenceFlowRelationship));
-      }
-    }
-    return outgoingSequenceFlows;
-  }
-  
-  public List<SequenceFlow> getIncomingSequenceFlow() {
-    if (incomingSequenceFlows == null) {
-      incomingSequenceFlows = new ArrayList<SequenceFlow>();
-      for (Relationship sequenceFlowRelationship : activityNode.getRelationships(Direction.INCOMING, RelTypes.SEQ_FLOW)) {
-        incomingSequenceFlows.add(new NodeBasedSequenceFlow(sequenceFlowRelationship));
-      }
-    }
-    return incomingSequenceFlows;
-  }
-  
-  public String getId() {
-    return (String) activityNode.getProperty("id");
-  }
-  
-  public Object getProperty(String property) {
-    return activityNode.getProperty(property);
-  }
-  
-  public boolean hasProperty(String property) {
-    return activityNode.hasProperty(property);
-  }
-  
-  public void setProperty(String property, Object value) {
-    activityNode.setProperty(property, value);
-  }
-  
-  public Object removeProperty(String property) {
-    return activityNode.removeProperty(property);
-  }
-  
-  public Node getActivityNode() {
-    return activityNode;
-  }
 
-  public void setActivityNode(Node activityNode) {
-    this.activityNode = activityNode;
-  }
+    private TaskNodeNeo activityNode;
 
+    protected List<SequenceFlow> incomingSequenceFlows;
+    protected List<SequenceFlow> outgoingSequenceFlows;
+
+    //@Autowired
+    //private Neo4jTemplate template;
+
+    public NodeBasedActivity(TaskNodeNeo activityNode) {
+        this.activityNode = activityNode;
+    }
+
+    public List<SequenceFlow> getOutgoingSequenceFlow() {
+
+        if (outgoingSequenceFlows == null) {
+
+            outgoingSequenceFlows = new ArrayList<SequenceFlow>();
+            for (TaskRelationship sequenceFlowRelationship : activityNode.getOutgoingRelationships()) {
+                outgoingSequenceFlows.add(new NodeBasedSequenceFlow(sequenceFlowRelationship));
+            }
+        }
+        return outgoingSequenceFlows;
+    }
+
+    public List<SequenceFlow> getIncomingSequenceFlow() {
+        if (incomingSequenceFlows == null) {
+            incomingSequenceFlows = new ArrayList<SequenceFlow>();
+            for (TaskRelationship sequenceFlowRelationship : activityNode.getIncomingRelationships()) {
+                incomingSequenceFlows.add(new NodeBasedSequenceFlow(sequenceFlowRelationship));
+            }
+        }
+        return incomingSequenceFlows;
+    }
+
+    public String getId() {
+        return activityNode.getId();
+    }
+
+    public Object getProperty(String property) {
+        // TODO: cache this map avoiding to re-create it every time this method is caled
+        Map<String, Object> introspected = new BeanMap(activityNode);
+        return introspected.get(property);
+    }
+
+    public boolean hasProperty(String property) {
+        notImplemented();
+        return false;
+        //return activityNode.hasProperty(property);
+    }
+
+    public void setProperty(String property, Object value) {
+        notImplemented();
+        //activityNode.setProperty(property, value);
+    }
+
+    public Object removeProperty(String property) {
+        notImplemented();
+        return null;
+        //return activityNode.removeProperty(property);
+    }
+
+    @Override
+    public void setActivityNode(TaskNodeNeo activityNode) {
+        this.activityNode = activityNode;
+    }
+
+    @Override
+    public TaskNodeNeo getNode() {
+        return this.activityNode;
+    }
 }

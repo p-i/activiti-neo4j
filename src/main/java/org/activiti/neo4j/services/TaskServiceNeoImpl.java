@@ -96,7 +96,7 @@ public class TaskServiceNeoImpl extends ServiceImpl implements TaskService {
 
             @Override
             public Object execute(CommandContextNeo4j commandContext) {
-                commandContext.signal(commandContext.getExecutionManager().getExecutionById(Long.parseLong(taskId)));
+                commandContext.signal(commandContext.getExecutionManager().getExecutionById(taskId));
                 return null;
             }
         });
