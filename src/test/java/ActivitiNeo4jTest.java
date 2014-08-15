@@ -1,6 +1,8 @@
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.task.Task;
+import org.activiti.neo4j.Constants;
+import org.activiti.neo4j.persistence.entity.UserTaskNodeNeo;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -51,8 +53,6 @@ public class ActivitiNeo4jTest {
         // Start process instance
         processEngine.getRuntimeService().startProcessInstanceByKey("oneTaskProcess");
 
-        if (true) return;
-
         // See if there is a task for kermit
         List<Task> tasks = processEngine.getTaskService()
                 .createTaskQuery()
@@ -60,8 +60,9 @@ public class ActivitiNeo4jTest {
                 .list();
         assertEquals(1, tasks.size());
 
-        Task task = tasks.get(0);
-        assertEquals("My task", task.getName());
+        UserTaskNodeNeo task = (UserTaskNodeNeo) tasks.get(0);
+        assertEquals("theTaskId", task.getId());
+        assertEquals(Constants.TYPE_USER_TASK, task.getType());
 
         // Complete task
         processEngine.getTaskService().complete(task.getId());

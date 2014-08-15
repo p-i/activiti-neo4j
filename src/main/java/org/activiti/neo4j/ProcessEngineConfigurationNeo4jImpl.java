@@ -28,6 +28,7 @@ import org.activiti.spring.SpringProcessEngineConfiguration;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
@@ -60,7 +61,7 @@ public class ProcessEngineConfigurationNeo4jImpl extends SpringProcessEngineConf
 
         initBehaviorMapping();
         initCore();
-        //initManagers();
+        initManagers();
         initCommandExecutor();
         initServices();
 
@@ -85,10 +86,9 @@ public class ProcessEngineConfigurationNeo4jImpl extends SpringProcessEngineConf
         this.core = core;
     }
 
-    // TODO: re-think, do we need managers?
     protected void initManagers() {
-        NodeBaseExecutionManager nodeBaseExecutionManager = new NodeBaseExecutionManager();
-        nodeBaseExecutionManager.setGraphDb(graphDatabaseService);
+
+       NodeBaseExecutionManager nodeBaseExecutionManager = new NodeBaseExecutionManager(super.getApplicationContext());
         this.executionManager = nodeBaseExecutionManager;
     }
 

@@ -48,7 +48,7 @@ public class CommandExecutorNeo4j {
     protected <T> CommandContextNeo4j<T> initialiseCommandContext(final ICommand<T> command) {
         final CommandContextNeo4j<T> commandContext = new CommandContextNeo4j<T>(processEngineConfiguration);
         commandContext.setCore(core);
-        //commandContext.setExecutionManager(executionManager);
+        commandContext.setExecutionManager(executionManager);
 
         commandContext.getAgenda().add(new Runnable() {
 

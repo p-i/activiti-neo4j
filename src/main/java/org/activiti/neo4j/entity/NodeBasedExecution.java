@@ -15,7 +15,6 @@ package org.activiti.neo4j.entity;
 import org.activiti.neo4j.Activity;
 import org.activiti.neo4j.Execution;
 import org.activiti.neo4j.ProcessInstance;
-import org.activiti.neo4j.RelTypes;
 import org.activiti.neo4j.persistence.entity.TaskNodeNeo;
 import org.activiti.neo4j.persistence.entity.TaskRelationship;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +28,7 @@ public class NodeBasedExecution implements Execution {
     // An execution is actually a thin wrapper around a Neo4j relationship
     // adding al sorts of convenience methods that hide the internal bits
     protected TaskRelationship relationship;
+    private TaskNodeNeo node;
 
     @Autowired
     protected NodeBasedProcessInstance processInstance;
@@ -40,7 +40,10 @@ public class NodeBasedExecution implements Execution {
 
     public NodeBasedExecution() {
 
+    }
 
+    public NodeBasedExecution(TaskNodeNeo node) {
+       this.node = node;
     }
 
     public NodeBasedExecution(TaskRelationship relationship) {
@@ -48,13 +51,13 @@ public class NodeBasedExecution implements Execution {
     }
 
     public ProcessInstance getProcessInstance() {
-        this.processInstance.setProcessInstance(this.relationship.getTo());
+        this.processInstance.setProcessInstance(this.node);
         return this.processInstance;
     }
 
     public Activity getActivity() {
         if (activity == null) {
-            activity = new NodeBasedActivity(this.relationship.getTo());
+            activity = new NodeBasedActivity(this.node);
         }
         return this.activity;
     }
@@ -83,8 +86,7 @@ public class NodeBasedExecution implements Execution {
     
     variableNode.setProperty(variableName, variableValue);
 */
-        TaskNodeNeo endNode = relationship.getTo();
-        // TODO: save variable to the node
+
     }
 
     public Object getVariable(String variableName) {
@@ -120,7 +122,7 @@ public class NodeBasedExecution implements Execution {
 
     public void delete() {
         // Delete actual execution relationship
-        template.delete(relationship);
+        //template.delete(relationship);
     }
 
     public Object removeProperty(String property) {
@@ -131,5 +133,6 @@ public class NodeBasedExecution implements Execution {
     @Override
     public void setRelationshipExecution(TaskRelationship executionRelationship) {
         this.relationship = executionRelationship;
+        this.node = executionRelationship.getTo();
     }
 }

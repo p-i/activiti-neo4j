@@ -2,11 +2,11 @@ package org.activiti.neo4j.services;
 
 import org.activiti.engine.TaskService;
 import org.activiti.engine.impl.ServiceImpl;
-import org.activiti.engine.impl.interceptor.CommandExecutor;
 import org.activiti.engine.task.*;
 import org.activiti.neo4j.CommandContextNeo4j;
 import org.activiti.neo4j.CommandExecutorNeo4j;
 import org.activiti.neo4j.cmd.ICommand;
+import org.activiti.neo4j.query.TaskQueryNeoImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
@@ -29,7 +29,7 @@ public class TaskServiceNeoImpl extends ServiceImpl implements TaskService {
 
     @Override
     public TaskQuery createTaskQuery() {
-        return (TaskQuery) context.getBean("taskQuery");
+        return (TaskQueryNeoImpl) context.getBean("taskQuery");
         //return new TaskQueryNeoImpl();
     }
 

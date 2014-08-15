@@ -174,6 +174,7 @@ public class DeployNeoCmd<T> extends DeployCmd implements ICommand<Deployment>, 
 
     private void addUserTask(UserTask userTask) {
         UserTaskNodeNeo userTaskNode = new UserTaskNodeNeo(userTask);
+        userTaskNode.setOwner("Trololo-owner");
         userTaskNeoRepository.save(userTaskNode);
         nodeMap.put(userTaskNode.getId(), userTaskNode);
     }

@@ -17,6 +17,6 @@ public interface UserTaskNeoRepository extends GraphRepository<UserTaskNodeNeo>,
      * @param assignee
      * @return Iterator<Task>
      */
-    @Query("start u=node:UserTaskNodeNeo(assignee='{assignee}') return u")
-    Iterable<UserTaskNodeNeo> findUserTasksByAssignee(@Param("assignee") String assignee);
+    @Query("match (u:UserTaskNodeNeo {assignee: {0}}) return u")
+    Iterable<UserTaskNodeNeo> findUserTasksByAssignee(String assignee);
 }

@@ -69,7 +69,7 @@ public class NodeBasedActivity implements Activity {
     }
 
     public Object getProperty(String property) {
-        // TODO: cache this map avoiding to re-create it every time this method is caled
+        // TODO: cache this map avoiding to re-create it every time this method is called
         Map<String, Object> introspected = new BeanMap(activityNode);
         return introspected.get(property);
     }

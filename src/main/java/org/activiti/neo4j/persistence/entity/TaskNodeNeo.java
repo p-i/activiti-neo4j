@@ -32,6 +32,7 @@ public class TaskNodeNeo extends TaskEntity {
     @Indexed
     private String type;
 
+    @Indexed
     private String name;
 
     @RelatedToVia(type = Constants.REL_TYPE_SEQ_FLOW, direction = Direction.INCOMING)

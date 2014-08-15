@@ -14,9 +14,6 @@ public class UserTaskNodeNeo extends TaskNodeNeo {
     @Indexed
     protected String name;
 
-    @Indexed
-    protected String assignee;
-
     public UserTaskNodeNeo() {}
 
     public UserTaskNodeNeo(UserTask task) {
@@ -25,16 +22,8 @@ public class UserTaskNodeNeo extends TaskNodeNeo {
 
     public UserTaskNodeNeo(String id, String name, String assignee) {
         super(id, Constants.TYPE_USER_TASK);
+        this.setAssignee(assignee);
         this.name = name;
-        this.assignee = assignee;
-    }
-
-    public String getAssignee() {
-        return assignee;
-    }
-
-    public void setAssignee(String assignee) {
-        this.assignee = assignee;
     }
 
     public String getName() {
@@ -43,5 +32,5 @@ public class UserTaskNodeNeo extends TaskNodeNeo {
 
     public void setName(String name) {
         this.name = name;
-    }
+   }
 }
