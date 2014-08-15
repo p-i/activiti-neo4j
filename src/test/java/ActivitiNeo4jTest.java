@@ -92,7 +92,6 @@ public class ActivitiNeo4jTest {
 //    
 //  }
 
-    @Ignore
   @Test
   @Transactional
   public void parallelTest() throws Exception {
@@ -131,7 +130,6 @@ public class ActivitiNeo4jTest {
     assertTrue(foundTask1 && foundTask2);
   }
 
-    @Ignore
   @Test
   public void startMultipleProcessInstancesTest() throws Exception {
 
@@ -172,4 +170,3 @@ public class ActivitiNeo4jTest {
 
 
 }
-
